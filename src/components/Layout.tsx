@@ -20,7 +20,10 @@ export const Navbar: React.FC = () => {
     { name: 'Trang Chủ', path: '/' },
     { name: 'Bộ Sưu Tập', path: '/collection' },
     { name: 'Kiến Thức', path: '/insights' },
-    ...(isAdmin ? [{ name: 'Quản Lý', path: '/admin' }] : []),
+    ...(isAdmin ? [
+      { name: 'Sản Phẩm', path: '/admin' },
+      { name: 'Giải Đấu', path: '/admin/articles' }
+    ] : []),
   ];
 
   return (
@@ -141,9 +144,9 @@ export const Footer: React.FC = () => {
         <div className="md:col-span-4">
           <h4 className="text-[10px] uppercase tracking-[0.3em] text-on-surface font-bold mb-8">Kết Nối</h4>
           <div className="flex space-x-6 mb-8">
-            {['Instagram', 'Facebook', 'Twitter'].map(social => (
-              <a key={social} href="#" className="text-on-surface-variant hover:text-secondary transition-colors text-xs uppercase tracking-widest">{social}</a>
-            ))}
+            <a href="#" className="text-on-surface-variant hover:text-secondary transition-colors text-xs uppercase tracking-widest">Instagram</a>
+            <a href="https://www.facebook.com/ofcourse.urcuties/" target="_blank" rel="noopener noreferrer" className="text-on-surface-variant hover:text-secondary transition-colors text-xs uppercase tracking-widest">Facebook</a>
+            <a href="#" className="text-on-surface-variant hover:text-secondary transition-colors text-xs uppercase tracking-widest">Twitter</a>
           </div>
           <div className="p-1 border-b border-outline-variant/30 flex">
             <input type="email" placeholder="Email của bạn" className="bg-transparent border-none focus:ring-0 text-sm flex-grow placeholder:text-on-surface-variant/30" />
