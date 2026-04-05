@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db, signInWithGoogle, logout } from '../firebase';
+import { PRODUCTS, ARTICLES } from '../constants';
 
 interface UserProfile {
   uid: string;
@@ -60,6 +61,42 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setProfile(newProfile);
           } else {
             setProfile(userDoc.data() as UserProfile);
+          }
+
+          // Initialize data if admin
+          if (currentUser.email === 'minhpnhgcd220355@fpt.edu.vn') {
+            const initData = async () => {
+              try {
+                const productsSnap = await getDocs(collection(db, 'products'));
+                if (productsSnap.empty) {
+                  for (const p of PRODUCTS) {
+                    await addDoc(collection(db, 'products'), p);
+                  }
+                }
+
+                const articlesSnap = await getDocs(collection(db, 'articles'));
+                // Check if articles need update (e.g., missing 'content' field or count mismatch)
+                const needsUpdate = articlesSnap.empty || 
+                                   articlesSnap.docs.length !== ARTICLES.length ||
+                                   articlesSnap.docs.some(doc => !doc.data().content);
+                
+                if (needsUpdate) {
+                  // For simplicity in this demo, if update is needed, we clear and re-add
+                  // In a real app, you'd update existing docs
+                  if (!articlesSnap.empty) {
+                    for (const doc of articlesSnap.docs) {
+                      await deleteDoc(doc.ref);
+                    }
+                  }
+                  for (const a of ARTICLES) {
+                    await addDoc(collection(db, 'articles'), a);
+                  }
+                }
+              } catch (error) {
+                console.error("Initialization error:", error);
+              }
+            };
+            initData();
           }
 
           // Listen to cart changes

@@ -139,7 +139,7 @@ export const ProductDetail: React.FC = () => {
                 ))}
               </div>
             </div>
-            <div className="pt-4">
+            <div className="pt-4 space-y-4">
               <button 
                 onClick={addToCart}
                 disabled={addingToCart}
@@ -148,6 +148,10 @@ export const ProductDetail: React.FC = () => {
                 {addingToCart ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShoppingBag className="w-5 h-5" />}
                 <span>{addingToCart ? 'Đang Thêm...' : 'Thêm Vào Bộ Sưu Tập'}</span>
               </button>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Hoặc xem trực tiếp tại cửa hàng</p>
+                <a href="tel:0768139513" className="text-secondary font-sans font-bold hover:underline transition-all">Hotline: 0768139513</a>
+              </div>
             </div>
             <p className="text-sm text-on-surface-variant leading-relaxed font-light italic opacity-80">
               "{product.description} Sự chính xác không phải là một lựa chọn; đó là tiêu chuẩn."

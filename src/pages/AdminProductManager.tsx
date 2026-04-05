@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'motion/react';
 import { Plus, Edit2, Trash2, X, Check, Package, DollarSign, Tag, FileText, Image as ImageIcon, Settings, Loader2 } from 'lucide-react';
-import { CATEGORIES, PRODUCTS } from '../constants';
+import { CATEGORIES, PRODUCTS, ARTICLES } from '../constants';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, query, orderBy } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
@@ -45,13 +45,6 @@ export const AdminProductManager: React.FC = () => {
       }));
       setProducts(productsData);
       setLoading(false);
-
-      // Initialize with default products if empty (for demo purposes)
-      if (snapshot.empty && productsData.length === 0) {
-        PRODUCTS.forEach(async (p) => {
-          await addDoc(collection(db, 'products'), p);
-        });
-      }
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'products');
     });
@@ -88,6 +81,7 @@ export const AdminProductManager: React.FC = () => {
 
   const onSubmit = async (data: ProductFormInputs) => {
     setIsSubmitting(true);
+    console.log("Submitting product data:", data);
     try {
       if (editingProduct) {
         await setDoc(doc(db, 'products', editingProduct.id), data);
@@ -96,6 +90,7 @@ export const AdminProductManager: React.FC = () => {
       }
       closeModal();
     } catch (error) {
+      console.error("Error adding/updating product:", error);
       handleFirestoreError(error, editingProduct ? OperationType.UPDATE : OperationType.CREATE, 'products');
     } finally {
       setIsSubmitting(false);
@@ -239,7 +234,7 @@ export const AdminProductManager: React.FC = () => {
                       </label>
                       <input 
                         type="number"
-                        {...register('price', { required: true, min: 0 })}
+                        {...register('price', { required: true, min: 0, valueAsNumber: true })}
                         className="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 transition-colors"
                       />
                     </div>

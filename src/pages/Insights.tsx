@@ -1,28 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Mail, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Mail, ArrowRight, ChevronLeft, ChevronRight, Loader2, X, Calendar, Tag, MapPin, Clock, Users, Trophy, Wallet, Info } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import Markdown from 'react-markdown';
 
 export const Insights: React.FC = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
+  const [activeCategory, setActiveCategory] = useState('Tất Cả');
 
   useEffect(() => {
-    const q = query(collection(db, 'articles'), orderBy('id', 'asc'));
+    const q = query(collection(db, 'articles'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const articlesData = snapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
-      }));
+      })).sort((a: any, b: any) => {
+        // Client-side sorting as fallback
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
       setArticles(articlesData);
       setLoading(false);
     }, (error) => {
+      console.error("Insights fetch error:", error);
       handleFirestoreError(error, OperationType.LIST, 'articles');
     });
 
     return () => unsubscribe();
   }, []);
+
+  const filteredArticles = activeCategory === 'Tất Cả' 
+    ? articles 
+    : articles.filter(article => article.category === activeCategory);
 
   if (loading) return <div className="pt-40 text-center"><Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" /></div>;
 
@@ -33,7 +44,7 @@ export const Insights: React.FC = () => {
         <div className="absolute inset-0 z-0">
           <img 
             className="w-full h-full object-cover brightness-[0.3]" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGCQPYLfMndwWI7NWgli-KQAFM4xvLVweuoF-w1vNocczTxd7y9OUljKGmEj_dsiAjj8IlZzL6HKfs5G6of0e6Vw2T4VBOLgPEzOszSoPb6koBRpYj5CQek5XJ5o9LVLb4CryNS0gwdKw59Ai8dy4rK-TUdmrFr012dp25VctpkvTVv6HWvUScgibkXKA0e-tq3GEMOuHWpVoyKYL3_kajV81Cc7E6omTrWiZwBlxOYaFLp8s2Q3qCj_wNHgXWdwZzmVIgy_RBDCVI"
+            src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop" 
             referrerPolicy="no-referrer"
             alt="Insights Hero"
           />
@@ -63,39 +74,50 @@ export const Insights: React.FC = () => {
             <p className="text-sm text-on-surface-variant font-sans tracking-wide uppercase">Các bài viết chọn lọc cho người chơi nghiêm túc</p>
           </div>
           <div className="flex flex-wrap gap-6 font-sans text-[10px] tracking-[0.2em] uppercase text-on-surface-variant">
-            {['Tất Cả', 'Kỹ Thuật', 'Thiết Bị', 'Mẹo Chuyên Nghiệp', 'Bảo Trì'].map((cat, i) => (
-              <button key={cat} className={`${i === 0 ? 'text-secondary border-b-2 border-secondary' : 'hover:text-on-surface'} pb-1 px-1 transition-colors`}>
+            {['Tất Cả', 'Kỹ Thuật', 'Cơ Thủ', 'Mẹo Chuyên Nghiệp', 'Trận Đấu', 'Giải Đấu'].map((cat) => (
+              <button 
+                key={cat} 
+                onClick={() => setActiveCategory(cat)}
+                className={`${activeCategory === cat ? 'text-secondary border-b-2 border-secondary' : 'hover:text-on-surface'} pb-1 px-1 transition-colors`}
+              >
                 {cat}
               </button>
             ))}
           </div>
         </div>
 
-        {articles.length > 0 ? (
+        {filteredArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Featured Large Post */}
-            <article className="md:col-span-8 group relative overflow-hidden rounded-lg bg-surface-container-low flex flex-col md:flex-row shadow-xl hover:shadow-2xl transition-all duration-500">
+            <article 
+              onClick={() => setSelectedArticle(filteredArticles[0])}
+              className="md:col-span-8 group relative overflow-hidden rounded-lg bg-surface-container-low flex flex-col md:flex-row shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer"
+            >
               <div className="md:w-1/2 overflow-hidden h-80 md:h-auto">
                 <img 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                  src={articles[0].image}
-                  alt={articles[0].title}
+                  src={filteredArticles[0].image}
+                  alt={filteredArticles[0].title}
                   referrerPolicy="no-referrer"
                 />
               </div>
               <div className="md:w-1/2 p-10 flex flex-col justify-center">
-                <span className="text-secondary font-sans text-[10px] uppercase tracking-[0.2em] mb-4">{articles[0].category}</span>
-                <h3 className="text-3xl serif mb-4 leading-snug group-hover:text-primary transition-colors">{articles[0].title}</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed mb-8">{articles[0].excerpt}</p>
-                <a className="text-secondary serif italic text-lg inline-flex items-center gap-2 group/link" href="#">
+                <span className="text-secondary font-sans text-[10px] uppercase tracking-[0.2em] mb-4">{filteredArticles[0].category}</span>
+                <h3 className="text-3xl serif mb-4 leading-snug group-hover:text-primary transition-colors">{filteredArticles[0].title}</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed mb-8 line-clamp-3">{filteredArticles[0].excerpt}</p>
+                <div className="text-secondary serif italic text-lg inline-flex items-center gap-2 group/link">
                   Đọc Thêm <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
-                </a>
+                </div>
               </div>
             </article>
 
             {/* Grid Posts */}
-            {articles.slice(1).map(article => (
-              <article key={article.id} className="md:col-span-4 group bg-surface-container rounded-lg p-8 flex flex-col border border-outline-variant/10 hover:border-primary/30 transition-all">
+            {filteredArticles.slice(1).map(article => (
+              <article 
+                key={article.id} 
+                onClick={() => setSelectedArticle(article)}
+                className="md:col-span-4 group bg-surface-container rounded-lg p-8 flex flex-col border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer"
+              >
                 <div className="aspect-video overflow-hidden rounded-lg mb-6">
                   <img 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
@@ -105,15 +127,15 @@ export const Insights: React.FC = () => {
                   />
                 </div>
                 <span className="text-secondary font-sans text-[10px] uppercase tracking-[0.2em] mb-3">{article.category}</span>
-                <h3 className="text-xl serif mb-4 leading-tight group-hover:text-primary transition-colors">{article.title}</h3>
-                <p className="text-on-surface-variant text-xs leading-relaxed mb-6">{article.excerpt}</p>
-                <a className="mt-auto text-on-surface font-sans text-[10px] uppercase tracking-widest border-b border-outline-variant w-max pb-1" href="#">Chi Tiết</a>
+                <h3 className="text-xl serif mb-4 leading-tight group-hover:text-primary transition-colors line-clamp-2">{article.title}</h3>
+                <p className="text-on-surface-variant text-xs leading-relaxed mb-6 line-clamp-3">{article.excerpt}</p>
+                <div className="mt-auto text-on-surface font-sans text-[10px] uppercase tracking-widest border-b border-outline-variant w-max pb-1">Chi Tiết</div>
               </article>
             ))}
           </div>
         ) : (
           <div className="text-center py-20 text-on-surface-variant">
-            <p>Chưa có bài viết nào được đăng tải.</p>
+            <p>Chưa có bài viết nào trong mục này.</p>
           </div>
         )}
 
@@ -130,6 +152,111 @@ export const Insights: React.FC = () => {
           </button>
         </div>
       </section>
+
+      {/* Article Modal */}
+      <AnimatePresence>
+        {selectedArticle && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedArticle(null)}
+              className="absolute inset-0 bg-background/90 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-4xl bg-surface-container rounded-2xl shadow-2xl overflow-hidden border border-outline-variant/20 flex flex-col max-h-[90vh]"
+            >
+              <button 
+                onClick={() => setSelectedArticle(null)}
+                className="absolute top-6 right-6 z-10 p-2 bg-background/50 hover:bg-background rounded-full transition-colors backdrop-blur-sm"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="overflow-y-auto custom-scrollbar">
+                <div className="h-64 md:h-96 relative">
+                  <img 
+                    src={selectedArticle.image} 
+                    alt={selectedArticle.title}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface-container via-transparent to-transparent"></div>
+                </div>
+
+                <div className="p-8 md:p-12">
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-secondary font-bold bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20">
+                      <Tag className="w-3 h-3" /> {selectedArticle.category}
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
+                      <Calendar className="w-3 h-3" /> {selectedArticle.date}
+                    </div>
+                  </div>
+
+                  <h2 className="text-4xl md:text-5xl serif font-bold text-on-surface mb-8 leading-tight">{selectedArticle.title}</h2>
+                  
+                  {/* Tournament Info Grid */}
+                  {selectedArticle.category === 'Giải Đấu' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10 bg-surface-container-high/50 rounded-xl p-8 border border-outline-variant/10">
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Địa Điểm</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.location}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Clock className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Thời Gian</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.time}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Wallet className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Lệ Phí</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.fee}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Users className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Số Lượng</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.participants}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 sm:col-span-2">
+                        <Trophy className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Giải Thưởng</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.prizes}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 sm:col-span-2">
+                        <Info className="w-5 h-5 text-secondary shrink-0" />
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Thể Lệ</span>
+                          <span className="text-sm text-on-surface">{selectedArticle.rules}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="markdown-body prose prose-invert max-w-none text-on-surface-variant leading-relaxed text-lg">
+                    <Markdown>{selectedArticle.content}</Markdown>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Newsletter Section */}
       <section className="bg-surface-container-lowest py-24 border-t border-outline-variant/10">

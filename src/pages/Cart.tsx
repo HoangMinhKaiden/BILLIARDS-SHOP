@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Minus, Plus, Trash2, Loader2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Minus, Plus, Trash2, Loader2, ShoppingBag, Check } from 'lucide-react';
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, query } from 'firebase/firestore';
@@ -9,6 +9,8 @@ export const Cart: React.FC = () => {
   const { user, loading: authLoading, signIn } = useFirebase();
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -59,10 +61,39 @@ export const Cart: React.FC = () => {
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const taxes = subtotal * 0.08;
-  const total = subtotal + taxes;
+  const total = subtotal;
+
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'contact'>('cod');
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    // Simulate order processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // In a real app, we would create an 'orders' document in Firestore
+    // and clear the cart.
+    setCheckoutSuccess(true);
+    setIsCheckingOut(false);
+  };
 
   if (authLoading || loading) return <div className="pt-40 text-center"><Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" /></div>;
+
+  if (checkoutSuccess) {
+    return (
+      <main className="pt-40 pb-20 px-4 text-center max-w-lg mx-auto">
+        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+          <Check className="w-10 h-10 text-emerald-500" />
+        </div>
+        <h2 className="serif text-4xl mb-4">Cảm ơn bạn!</h2>
+        <p className="text-on-surface-variant mb-8 leading-relaxed">
+          {paymentMethod === 'cod' 
+            ? 'Đơn hàng của bạn đã được tiếp nhận. Chúng tôi sẽ sớm liên hệ để xác nhận và giao hàng.' 
+            : 'Yêu cầu của bạn đã được gửi đi. Chúng tôi sẽ liên hệ qua SĐT 0768139513 để sắp xếp lịch hẹn.'}
+        </p>
+        <Link to="/collection" className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold uppercase tracking-widest inline-block">Tiếp Tục Mua Sắm</Link>
+      </main>
+    );
+  }
 
   if (!user) {
     return (
@@ -175,20 +206,53 @@ export const Cart: React.FC = () => {
                 <span className="text-on-surface-variant font-sans text-xs uppercase tracking-widest">Vận Chuyển</span>
                 <span className="font-sans text-emerald-200">Miễn Phí</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-on-surface-variant font-sans text-xs uppercase tracking-widest">Thuế Ước Tính</span>
-                <span className="font-sans text-on-surface">${taxes.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              
+              <div className="pt-6 border-t border-outline-variant/20">
+                <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-4 block">Phương Thức Thanh Toán</label>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`w-full p-4 rounded-lg border flex items-center justify-between transition-all ${paymentMethod === 'cod' ? 'border-secondary bg-secondary/5 text-secondary' : 'border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/40'}`}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-widest">Thanh toán khi nhận hàng (COD)</span>
+                    {paymentMethod === 'cod' && <div className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(233,193,118,0.6)]"></div>}
+                  </button>
+                  <button 
+                    onClick={() => setPaymentMethod('contact')}
+                    className={`w-full p-4 rounded-lg border flex flex-col items-start gap-1 transition-all ${paymentMethod === 'contact' ? 'border-secondary bg-secondary/5 text-secondary' : 'border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/40'}`}
+                  >
+                    <div className="w-full flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-widest">Liên hệ xem trực tiếp</span>
+                      {paymentMethod === 'contact' && <div className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(233,193,118,0.6)]"></div>}
+                    </div>
+                    <span className="text-[10px] opacity-70">Hotline: 0768139513</span>
+                  </button>
+                </div>
               </div>
+
               <div className="pt-6 border-t border-outline-variant/20">
                 <div className="flex justify-between items-end mb-8">
                   <span className="serif text-lg">Tổng Cộng</span>
-                  <span className="serif text-3xl text-secondary">${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="serif text-3xl text-secondary">${total.toLocaleString()}.00</span>
                 </div>
-                <button className="w-full py-4 bg-secondary text-on-secondary rounded-lg font-sans font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-secondary/20">
-                  Tiến Hành Thanh Toán
+                <button 
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
+                  className="w-full py-4 bg-secondary text-on-secondary rounded-lg font-sans font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-secondary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isCheckingOut ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    paymentMethod === 'cod' ? 'Đặt Hàng Ngay' : 'Gửi Yêu Cầu Liên Hệ'
+                  )}
                 </button>
                 <p className="mt-6 text-center text-[10px] text-on-surface-variant font-sans uppercase tracking-widest leading-relaxed">
-                  Giao hàng chuyên nghiệp được đảm bảo cho tất cả các cây cơ Grandmaster.
+                  {paymentMethod === 'cod' 
+                    ? 'Giao hàng chuyên nghiệp được đảm bảo cho tất cả các cây cơ Grandmaster.' 
+                    : 'Chúng tôi sẽ liên hệ với bạn qua SĐT 0768139513 để sắp xếp buổi xem sản phẩm trực tiếp.'}
                 </p>
               </div>
             </div>
