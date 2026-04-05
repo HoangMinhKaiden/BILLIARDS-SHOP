@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product information for the e-commerce store.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "brand": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string", "format": "uri" },
+        "specs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": "string" }
+            }
+          }
+        },
+        "weight": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["name", "price", "category", "brand", "description", "image"]
+    },
+    "CartItem": {
+      "title": "CartItem",
+      "description": "An item in a user's shopping cart.",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "integer" },
+        "image": { "type": "string", "format": "uri" },
+        "weight": { "type": "string" }
+      },
+      "required": ["productId", "name", "price", "quantity"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "A blog post or insight article.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "image": { "type": "string", "format": "uri" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "excerpt", "image", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    },
+    "/users/{userId}/cart/{itemId}": {
+      "schema": "CartItem",
+      "description": "User's shopping cart items."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product catalog."
+    },
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Insight articles."
+    }
+  }
+}

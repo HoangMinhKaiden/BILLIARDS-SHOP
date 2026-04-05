@@ -1,18 +1,83 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Star, ShoppingBag, Verified, Truck } from 'lucide-react';
-import { PRODUCTS } from '../constants';
+import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2 } from 'lucide-react';
+import { db, handleFirestoreError, OperationType } from '../firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { useFirebase } from '../context/FirebaseContext';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const product = PRODUCTS.find(p => p.id === id) || PRODUCTS[6]; // Default to Midnight Raven
+  const navigate = useNavigate();
+  const { user, signIn } = useFirebase();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchProduct = async () => {
+      try {
+        const docRef = doc(db, 'products', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProduct({ ...docSnap.data(), id: docSnap.id });
+        }
+      } catch (error) {
+        handleFirestoreError(error, OperationType.GET, `products/${id}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  const addToCart = async () => {
+    if (!user) {
+      signIn();
+      return;
+    }
+
+    if (!product) return;
+
+    setAddingToCart(true);
+    try {
+      const cartItemRef = doc(db, 'users', user.uid, 'cart', product.id);
+      const cartItemSnap = await getDoc(cartItemRef);
+
+      if (cartItemSnap.exists()) {
+        await updateDoc(cartItemRef, {
+          quantity: (cartItemSnap.data().quantity || 0) + 1
+        });
+      } else {
+        await setDoc(cartItemRef, {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          quantity: 1,
+          addedAt: new Date().toISOString()
+        });
+      }
+      navigate('/cart');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}/cart/${product.id}`);
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  if (loading) return <div className="pt-40 text-center"><Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" /></div>;
+  if (!product) return <div className="pt-40 text-center serif text-2xl">Không tìm thấy sản phẩm.</div>;
 
   return (
     <main className="pt-32 pb-20 max-w-7xl mx-auto px-8">
       {/* Breadcrumb */}
       <nav className="mb-12 flex items-center space-x-2 text-xs uppercase tracking-widest text-on-surface-variant/60 font-medium">
-        <Link to="/collection" className="hover:text-primary transition-colors">Collection</Link>
+        <Link to="/collection" className="hover:text-primary transition-colors">Bộ Sưu Tập</Link>
         <ChevronRight className="w-3 h-3" />
         <span className="text-on-surface">{product.name}</span>
       </nav>
@@ -25,7 +90,7 @@ export const ProductDetail: React.FC = () => {
             {[1, 2, 3].map(i => (
               <div key={i} className="aspect-square rounded-lg overflow-hidden border border-outline-variant/10 cursor-pointer bg-surface-container hover:border-secondary/40 transition-all">
                 <img 
-                  alt="Detail" 
+                  alt="Chi tiết" 
                   className="w-full h-full object-cover" 
                   src={product.image}
                   referrerPolicy="no-referrer"
@@ -49,11 +114,11 @@ export const ProductDetail: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col space-y-10">
           <header>
             <div className="flex items-center justify-between mb-4">
-              <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-bold rounded-full border border-primary/20">In Stock</span>
+              <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-bold rounded-full border border-primary/20">Còn Hàng</span>
               <div className="flex items-center text-secondary">
                 {[1, 2, 3, 4].map(i => <Star key={i} className="w-3 h-3 fill-current" />)}
                 <Star className="w-3 h-3" />
-                <span className="ml-2 text-xs text-on-surface-variant font-medium">(24 Reviews)</span>
+                <span className="ml-2 text-xs text-on-surface-variant font-medium">(24 Đánh giá)</span>
               </div>
             </div>
             <h1 className="text-6xl serif leading-tight text-on-surface mb-4">{product.name}</h1>
@@ -62,7 +127,7 @@ export const ProductDetail: React.FC = () => {
 
           <div className="space-y-6">
             <div className="space-y-4">
-              <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Select Weight</label>
+              <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Chọn Trọng Lượng</label>
               <div className="flex gap-4">
                 {['19 oz', '20 oz', '21 oz'].map((w, i) => (
                   <button 
@@ -75,13 +140,17 @@ export const ProductDetail: React.FC = () => {
               </div>
             </div>
             <div className="pt-4">
-              <button className="w-full py-5 bg-secondary text-on-secondary font-bold text-lg rounded-lg shadow-xl shadow-secondary/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center space-x-3">
-                <ShoppingBag className="w-5 h-5" />
-                <span>Add to Study Collection</span>
+              <button 
+                onClick={addToCart}
+                disabled={addingToCart}
+                className="w-full py-5 bg-secondary text-on-secondary font-bold text-lg rounded-lg shadow-xl shadow-secondary/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addingToCart ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShoppingBag className="w-5 h-5" />}
+                <span>{addingToCart ? 'Đang Thêm...' : 'Thêm Vào Bộ Sưu Tập'}</span>
               </button>
             </div>
             <p className="text-sm text-on-surface-variant leading-relaxed font-light italic opacity-80">
-              "{product.description} Precision is not an option; it is the standard."
+              "{product.description} Sự chính xác không phải là một lựa chọn; đó là tiêu chuẩn."
             </p>
           </div>
 
@@ -90,15 +159,15 @@ export const ProductDetail: React.FC = () => {
             <div className="flex items-start space-x-3">
               <Verified className="text-tertiary w-5 h-5" />
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface">Lifetime Warranty</h4>
-                <p className="text-[11px] text-on-surface-variant">Guaranteed craftsmanship</p>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface">Bảo Hành Trọn Đời</h4>
+                <p className="text-[11px] text-on-surface-variant">Cam kết chất lượng thủ công</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <Truck className="text-tertiary w-5 h-5" />
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface">Insured Shipping</h4>
-                <p className="text-[11px] text-on-surface-variant">White-glove delivery</p>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface">Giao Hàng Đảm Bảo</h4>
+                <p className="text-[11px] text-on-surface-variant">Vận chuyển chuyên nghiệp</p>
               </div>
             </div>
           </div>
@@ -110,8 +179,8 @@ export const ProductDetail: React.FC = () => {
         <section className="mt-32 pt-20 border-t border-outline-variant/10">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
             <div className="md:col-span-4">
-              <h2 className="text-4xl serif mb-4 text-on-surface">The Anatomy of Precision</h2>
-              <p className="text-on-surface-variant text-sm leading-relaxed font-light">The technical specs define the player's potential. Every element has been tuned for ultimate energy transfer and minimal deflection.</p>
+              <h2 className="text-4xl serif mb-4 text-on-surface">Giải Phẫu Sự Chính Xác</h2>
+              <p className="text-on-surface-variant text-sm leading-relaxed font-light">Các thông số kỹ thuật định nghĩa tiềm năng của người chơi. Mọi yếu tố đều được tinh chỉnh để truyền năng lượng tối ưu và giảm thiểu độ lệch.</p>
             </div>
             <div className="md:col-span-8 bg-surface-container-low rounded-xl p-12 shadow-inner">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-20">

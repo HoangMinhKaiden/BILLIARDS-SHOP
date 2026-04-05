@@ -6,27 +6,32 @@ import { Collection } from './pages/Collection';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Insights } from './pages/Insights';
+import { AdminProductManager } from './pages/AdminProductManager';
 import { motion, AnimatePresence } from 'motion/react';
+import { FirebaseProvider } from './context/FirebaseContext';
 
 export default function App() {
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-              <Route path="/collection" element={<PageWrapper><Collection /></PageWrapper>} />
-              <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
-              <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
-              <Route path="/insights" element={<PageWrapper><Insights /></PageWrapper>} />
-            </Routes>
-          </AnimatePresence>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <FirebaseProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <main className="flex-grow">
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+                <Route path="/collection" element={<PageWrapper><Collection /></PageWrapper>} />
+                <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
+                <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
+                <Route path="/insights" element={<PageWrapper><Insights /></PageWrapper>} />
+                <Route path="/admin" element={<PageWrapper><AdminProductManager /></PageWrapper>} />
+              </Routes>
+            </AnimatePresence>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </FirebaseProvider>
   );
 }
 

@@ -1,99 +1,163 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, User, ShoppingCart } from 'lucide-react';
+import { Search, User, ShoppingCart, Menu, X, LogOut, LogIn } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useFirebase } from '../context/FirebaseContext';
 
 export const Navbar: React.FC = () => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   const location = useLocation();
-  
+  const { user, profile, isAdmin, cartCount, signIn, signOut } = useFirebase();
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: 'Trang Chủ', path: '/' },
+    { name: 'Bộ Sưu Tập', path: '/collection' },
+    { name: 'Kiến Thức', path: '/insights' },
+    ...(isAdmin ? [{ name: 'Quản Lý', path: '/admin' }] : []),
+  ];
+
   return (
-    <nav className="fixed top-0 w-full flex justify-between items-center px-8 py-6 glass-nav text-emerald-50 z-50 shadow-2xl shadow-emerald-950/50">
-      <div className="flex items-center gap-12">
-        <Link to="/" className="text-2xl serif italic text-emerald-100">The Grandmaster</Link>
-        <div className="hidden md:flex gap-8">
-          <Link 
-            to="/collection" 
-            className={`font-sans text-xs uppercase tracking-widest transition-all duration-300 ${location.pathname === '/collection' ? 'text-amber-200 border-b-2 border-amber-200 pb-1' : 'text-emerald-100/70 hover:text-emerald-50'}`}
-          >
-            Cues
-          </Link>
-          <Link 
-            to="/accessories" 
-            className="text-emerald-100/70 hover:text-emerald-50 transition-all duration-300 font-sans text-xs uppercase tracking-widest"
-          >
-            Accessories
-          </Link>
-          <Link 
-            to="/tables" 
-            className="text-emerald-100/70 hover:text-emerald-50 transition-all duration-300 font-sans text-xs uppercase tracking-widest"
-          >
-            Tables
-          </Link>
-          <Link 
-            to="/insights" 
-            className={`font-sans text-xs uppercase tracking-widest transition-all duration-300 ${location.pathname === '/insights' ? 'text-amber-200 border-b-2 border-amber-200 pb-1' : 'text-emerald-100/70 hover:text-emerald-50'}`}
-          >
-            About Us
-          </Link>
-        </div>
-      </div>
-      <div className="flex items-center gap-6">
-        <div className="relative hidden lg:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-100/50 w-4 h-4" />
-          <input 
-            className="bg-emerald-900/20 border-none rounded-full py-2 pl-10 pr-4 text-xs text-emerald-50 placeholder:text-emerald-100/30 focus:ring-1 focus:ring-emerald-500/50 w-64 transition-all duration-300" 
-            placeholder="Search archives..." 
-            type="text"
-          />
-        </div>
-        <button className="hover:bg-emerald-800/40 p-2 rounded-full transition-all duration-300 active:scale-95">
-          <User className="text-emerald-200 w-5 h-5" />
-        </button>
-        <Link to="/cart" className="hover:bg-emerald-800/40 p-2 rounded-full transition-all duration-300 active:scale-95 relative">
-          <ShoppingCart className="text-emerald-200 w-5 h-5" />
-          <span className="absolute -top-1 -right-1 bg-amber-200 text-on-secondary text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">3</span>
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-background/90 backdrop-blur-md py-4 border-b border-outline-variant/10' : 'bg-transparent py-8'}`}>
+      <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
+        <Link to="/" className="flex flex-col">
+          <span className="text-2xl font-bold tracking-[0.2em] text-on-surface serif uppercase">GRANDMASTER</span>
+          <span className="text-[10px] tracking-[0.5em] text-secondary uppercase font-sans -mt-1">The Study</span>
         </Link>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-12">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`text-[11px] uppercase tracking-[0.2em] font-sans transition-colors hover:text-secondary ${location.pathname === link.path ? 'text-secondary' : 'text-on-surface-variant'}`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex items-center space-x-6">
+          <button className="text-on-surface-variant hover:text-secondary transition-colors"><Search className="w-5 h-5" /></button>
+          
+          {user ? (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-outline-variant/20" />
+                <span className="hidden lg:block text-[10px] uppercase tracking-widest text-on-surface-variant">{profile?.displayName}</span>
+              </div>
+              <button onClick={signOut} className="text-on-surface-variant hover:text-error transition-colors">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <button onClick={signIn} className="text-on-surface-variant hover:text-secondary transition-colors flex items-center gap-2">
+              <User className="w-5 h-5" />
+              <span className="hidden lg:block text-[10px] uppercase tracking-widest">Đăng Nhập</span>
+            </button>
+          )}
+
+          <Link to="/cart" className="relative text-on-surface-variant hover:text-secondary transition-colors">
+            <ShoppingCart className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-secondary text-on-secondary text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+          <button className="md:hidden text-on-surface" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Nav */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-full left-0 w-full bg-background border-b border-outline-variant/10 p-8 md:hidden"
+          >
+            <div className="flex flex-col space-y-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className="text-lg serif text-on-surface hover:text-secondary transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-zinc-950 border-t border-zinc-900 pt-20 pb-10">
-      <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
-        <div className="space-y-6">
-          <div className="serif text-xl text-emerald-50">The Grandmaster</div>
-          <p className="text-xs font-sans text-emerald-100/40 uppercase tracking-widest leading-relaxed">Defining precision through heritage and craftsmanship since 1884.</p>
+    <footer className="bg-surface-container-lowest pt-24 pb-12 border-t border-outline-variant/10">
+      <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+        <div className="md:col-span-4">
+          <Link to="/" className="flex flex-col mb-8">
+            <span className="text-3xl font-bold tracking-[0.2em] text-on-surface serif uppercase">GRANDMASTER</span>
+            <span className="text-xs tracking-[0.5em] text-secondary uppercase font-sans">The Study</span>
+          </Link>
+          <p className="text-on-surface-variant text-sm leading-relaxed font-light max-w-sm">
+            Nơi hội tụ những tinh hoa của bộ môn Billiards. Chúng tôi cung cấp những thiết bị đẳng cấp thế giới cho những cơ thủ khao khát sự hoàn hảo.
+          </p>
         </div>
-        <div>
-          <h4 className="font-sans text-xs uppercase tracking-widest text-emerald-100/50 mb-6">Explore</h4>
-          <ul className="space-y-3">
-            <li><Link to="/collection" className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest">Cues</Link></li>
-            <li><Link to="/accessories" className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest">Accessories</Link></li>
-            <li><Link to="/tables" className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest">Tables</Link></li>
+        
+        <div className="md:col-span-2">
+          <h4 className="text-[10px] uppercase tracking-[0.3em] text-on-surface font-bold mb-8">Khám Phá</h4>
+          <ul className="space-y-4 text-sm text-on-surface-variant font-light">
+            <li><Link to="/collection" className="hover:text-secondary transition-colors">Bộ Sưu Tập</Link></li>
+            <li><Link to="/insights" className="hover:text-secondary transition-colors">Kiến Thức</Link></li>
+            <li><Link to="/" className="hover:text-secondary transition-colors">Về Chúng Tôi</Link></li>
           </ul>
         </div>
-        <div>
-          <h4 className="font-sans text-xs uppercase tracking-widest text-emerald-100/50 mb-6">Service</h4>
-          <ul className="space-y-3">
-            <li><a className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest" href="#">Shipping Policies</a></li>
-            <li><a className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest" href="#">Warranty Information</a></li>
-            <li><a className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest" href="#">Store Locations</a></li>
-            <li><a className="text-emerald-100/40 hover:text-amber-100 transition-colors text-xs uppercase tracking-widest" href="#">Terms of Service</a></li>
+
+        <div className="md:col-span-2">
+          <h4 className="text-[10px] uppercase tracking-[0.3em] text-on-surface font-bold mb-8">Hỗ Trợ</h4>
+          <ul className="space-y-4 text-sm text-on-surface-variant font-light">
+            <li><Link to="/" className="hover:text-secondary transition-colors">Giao Hàng</Link></li>
+            <li><Link to="/" className="hover:text-secondary transition-colors">Bảo Hành</Link></li>
+            <li><Link to="/" className="hover:text-secondary transition-colors">Liên Hệ</Link></li>
           </ul>
         </div>
-        <div>
-          <h4 className="font-sans text-xs uppercase tracking-widest text-emerald-100/50 mb-6">Newsletter</h4>
-          <div className="flex items-center border-b border-emerald-100/20 pb-2">
-            <input className="bg-transparent border-none focus:ring-0 text-xs w-full text-emerald-100/50 placeholder:text-emerald-100/20" placeholder="YOUR EMAIL" type="email"/>
-            <button className="text-emerald-200">
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
+
+        <div className="md:col-span-4">
+          <h4 className="text-[10px] uppercase tracking-[0.3em] text-on-surface font-bold mb-8">Kết Nối</h4>
+          <div className="flex space-x-6 mb-8">
+            {['Instagram', 'Facebook', 'Twitter'].map(social => (
+              <a key={social} href="#" className="text-on-surface-variant hover:text-secondary transition-colors text-xs uppercase tracking-widest">{social}</a>
+            ))}
+          </div>
+          <div className="p-1 border-b border-outline-variant/30 flex">
+            <input type="email" placeholder="Email của bạn" className="bg-transparent border-none focus:ring-0 text-sm flex-grow placeholder:text-on-surface-variant/30" />
+            <button className="text-[10px] uppercase tracking-widest font-bold text-secondary">Gửi</button>
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-8 mt-20 text-center">
-        <p className="font-sans text-xs uppercase tracking-widest text-emerald-100/30">© 2024 The Grandmaster’s Study. All Rights Reserved.</p>
+      
+      <div className="max-w-7xl mx-auto px-8 pt-12 border-t border-outline-variant/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/40">© 2026 Grandmaster Billiards. Bảo lưu mọi quyền.</span>
+        <div className="flex space-x-8 text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/40">
+          <a href="#" className="hover:text-on-surface transition-colors">Chính sách bảo mật</a>
+          <a href="#" className="hover:text-on-surface transition-colors">Điều khoản dịch vụ</a>
+        </div>
       </div>
     </footer>
   );
