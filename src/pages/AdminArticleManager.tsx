@@ -29,6 +29,8 @@ export const AdminArticleManager: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,6 +89,16 @@ export const AdminArticleManager: React.FC = () => {
     setEditingArticle(null);
   };
 
+  const openDeleteModal = (article: Article) => {
+    setArticleToDelete(article);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setArticleToDelete(null);
+  };
+
   const onSubmit = async (data: ArticleFormInputs) => {
     setIsSubmitting(true);
     try {
@@ -113,13 +125,16 @@ export const AdminArticleManager: React.FC = () => {
     }
   };
 
-  const deleteArticle = async (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-      try {
-        await deleteDoc(doc(db, 'articles', id));
-      } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, `articles/${id}`);
-      }
+  const confirmDelete = async () => {
+    if (!articleToDelete) return;
+    setIsSubmitting(true);
+    try {
+      await deleteDoc(doc(db, 'articles', articleToDelete.id));
+      closeDeleteModal();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `articles/${articleToDelete.id}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -189,7 +204,7 @@ export const AdminArticleManager: React.FC = () => {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => deleteArticle(article.id)}
+                        onClick={() => openDeleteModal(article)}
                         className="p-2 hover:bg-error/10 text-on-surface-variant hover:text-error rounded transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -367,6 +382,51 @@ export const AdminArticleManager: React.FC = () => {
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={closeDeleteModal}
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-md bg-surface-container rounded-2xl shadow-2xl p-8 border border-outline-variant/20"
+          >
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 className="w-8 h-8 text-error" />
+              </div>
+              <div>
+                <h3 className="serif text-2xl mb-2">Xác Nhận Xóa</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Bạn có chắc chắn muốn xóa bài viết <span className="text-on-surface font-bold">"{articleToDelete?.title}"</span>? Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={closeDeleteModal}
+                  className="flex-1 px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-container-high transition-all"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-error text-on-error px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase hover:brightness-110 transition-all shadow-lg shadow-error/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Xác Nhận Xóa
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
       )}

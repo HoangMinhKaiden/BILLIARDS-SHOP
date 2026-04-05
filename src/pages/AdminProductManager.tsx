@@ -7,6 +7,7 @@ import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, query, orderBy } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
 import { Navigate } from 'react-router-dom';
+import { formatCurrency } from '../utils/format';
 
 interface ProductFormInputs {
   name: string;
@@ -23,6 +24,8 @@ export const AdminProductManager: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<any | null>(null);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,6 +82,16 @@ export const AdminProductManager: React.FC = () => {
     setEditingProduct(null);
   };
 
+  const openDeleteModal = (product: any) => {
+    setProductToDelete(product);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
+
   const onSubmit = async (data: ProductFormInputs) => {
     setIsSubmitting(true);
     console.log("Submitting product data:", data);
@@ -97,13 +110,16 @@ export const AdminProductManager: React.FC = () => {
     }
   };
 
-  const deleteProduct = async (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      try {
-        await deleteDoc(doc(db, 'products', id));
-      } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
-      }
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    setIsSubmitting(true);
+    try {
+      await deleteDoc(doc(db, 'products', productToDelete.id));
+      closeDeleteModal();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `products/${productToDelete.id}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -166,7 +182,7 @@ export const AdminProductManager: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-8 py-6 font-sans text-on-surface">
-                    ${product.price.toLocaleString()}
+                    {formatCurrency(product.price)}
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -177,7 +193,7 @@ export const AdminProductManager: React.FC = () => {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => deleteProduct(product.id)}
+                        onClick={() => openDeleteModal(product)}
                         className="p-2 hover:bg-error/10 text-on-surface-variant hover:text-error rounded transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -230,7 +246,7 @@ export const AdminProductManager: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                        <DollarSign className="w-3 h-3" /> Giá ($)
+                        <DollarSign className="w-3 h-3" /> Giá (VNĐ)
                       </label>
                       <input 
                         type="number"
@@ -346,6 +362,51 @@ export const AdminProductManager: React.FC = () => {
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={closeDeleteModal}
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-md bg-surface-container rounded-2xl shadow-2xl p-8 border border-outline-variant/20"
+          >
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 className="w-8 h-8 text-error" />
+              </div>
+              <div>
+                <h3 className="serif text-2xl mb-2">Xác Nhận Xóa</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Bạn có chắc chắn muốn xóa sản phẩm <span className="text-on-surface font-bold">"{productToDelete?.name}"</span>? Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={closeDeleteModal}
+                  className="flex-1 px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-container-high transition-all"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-error text-on-error px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase hover:brightness-110 transition-all shadow-lg shadow-error/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Xác Nhận Xóa
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
       )}

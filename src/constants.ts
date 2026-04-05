@@ -1,12 +1,12 @@
 import { Product, Article } from './types';
 
-export const CATEGORIES = ['Cơ Lỗ (Pool)', 'Cơ Carom', 'Cơ Snooker', 'Phụ Kiện'];
+export const CATEGORIES = ['Cơ Lỗ (Pool)', 'Cơ Carom', 'Cơ Snooker', 'Chuôi Cơ', 'Ngọn Cơ', 'Phụ Kiện'];
 
 export const PRODUCTS: Product[] = [
   {
     id: 'raven-1',
     name: 'Hắc Dạ Minh Châu (Midnight Raven)',
-    price: 2450,
+    price: 61250000,
     category: 'Cơ Lỗ (Pool)',
     brand: 'The Grandmaster',
     description: 'Được chế tác từ gỗ Mun đen quý hiếm, mang lại độ ổn định tuyệt đối và cảm giác đánh êm ái.',
@@ -22,7 +22,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'sovereign-1',
     name: 'The Sovereign',
-    price: 3850,
+    price: 96250000,
     category: 'Cơ Lỗ (Pool)',
     brand: 'The Grandmaster',
     description: 'Gỗ Mun Châu Phi & Khảm Bạc thủ công tinh xảo.',
@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'shadow-1',
     name: 'Midnight Shadow',
-    price: 1200,
+    price: 30000000,
     category: 'Cơ Carom',
     brand: 'The Grandmaster',
     description: 'Hiệu suất lõi Carbon tối ưu cho những cú đánh chính xác.',
@@ -52,9 +52,39 @@ export const PRODUCTS: Product[] = [
     weight: ['19oz', '20oz', '21oz']
   },
   {
+    id: 'butt-1',
+    name: 'Chuôi Cơ Custom Ebony',
+    price: 45000000,
+    category: 'Chuôi Cơ',
+    brand: 'The Grandmaster',
+    description: 'Chuôi cơ được làm từ gỗ Mun cao cấp, khảm trai tinh xảo.',
+    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop',
+    specs: [
+      { label: 'Chất liệu', value: 'Gỗ Mun' },
+      { label: 'Ren', value: 'Radial' },
+      { label: 'Khảm', value: 'Xà cừ' }
+    ],
+    weight: ['15oz', '16oz']
+  },
+  {
+    id: 'shaft-1',
+    name: 'Ngọn Carbon Grandmaster Pro',
+    price: 15000000,
+    category: 'Ngọn Cơ',
+    brand: 'The Grandmaster',
+    description: 'Ngọn Carbon công nghệ mới, độ lệch cực thấp.',
+    image: 'https://images.unsplash.com/photo-1609131009322-327119736694?q=80&w=2070&auto=format&fit=crop',
+    specs: [
+      { label: 'Đường kính', value: '12.4mm' },
+      { label: 'Chất liệu', value: 'Carbon Fiber' },
+      { label: 'Ren', value: 'Radial' }
+    ],
+    weight: []
+  },
+  {
     id: 'chalk-1',
     name: 'Phấn Kamui Beta',
-    price: 28,
+    price: 700000,
     category: 'Phụ Kiện',
     brand: 'Kamui',
     description: 'Độ ma sát cực cao cho khả năng kiểm soát xoáy hoàn hảo.',

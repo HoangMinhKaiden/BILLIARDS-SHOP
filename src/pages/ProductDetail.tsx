@@ -5,6 +5,7 @@ import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2 } from 'lucid
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
+import { formatCurrency } from '../utils/format';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -122,7 +123,7 @@ export const ProductDetail: React.FC = () => {
               </div>
             </div>
             <h1 className="text-6xl serif leading-tight text-on-surface mb-4">{product.name}</h1>
-            <p className="text-3xl font-light text-primary tracking-tight">${product.price.toLocaleString()}.00</p>
+            <p className="text-3xl font-light text-primary tracking-tight">{formatCurrency(product.price)}</p>
           </header>
 
           <div className="space-y-6">

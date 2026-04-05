@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight, Minus, Plus, Trash2, Loader2, ShoppingBag, Che
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, query } from 'firebase/firestore';
+import { formatCurrency } from '../utils/format';
 
 export const Cart: React.FC = () => {
   const { user, loading: authLoading, signIn } = useFirebase();
@@ -150,7 +151,7 @@ export const Cart: React.FC = () => {
               </div>
               <div className="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
                 <span className="md:hidden text-xs font-sans uppercase text-on-surface-variant">Giá</span>
-                <span className="font-sans text-on-surface">${item.price.toLocaleString()}.00</span>
+                <span className="font-sans text-on-surface">{formatCurrency(item.price)}</span>
               </div>
               <div className="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
                 <span className="md:hidden text-xs font-sans uppercase text-on-surface-variant">Số Lượng</span>
@@ -173,7 +174,7 @@ export const Cart: React.FC = () => {
               <div className="col-span-1 md:col-span-2 flex justify-between md:justify-end items-center">
                 <span className="md:hidden text-xs font-sans uppercase text-on-surface-variant">Tổng</span>
                 <div className="flex items-center gap-4">
-                  <span className="serif text-lg text-on-surface">${(item.price * item.quantity).toLocaleString()}.00</span>
+                  <span className="serif text-lg text-on-surface">{formatCurrency(item.price * item.quantity)}</span>
                   <button 
                     onClick={() => removeItem(item.id)}
                     className="text-on-surface-variant hover:text-error transition-colors"
@@ -200,7 +201,7 @@ export const Cart: React.FC = () => {
             <div className="space-y-6 relative">
               <div className="flex justify-between items-center">
                 <span className="text-on-surface-variant font-sans text-xs uppercase tracking-widest">Tạm Tính</span>
-                <span className="font-sans text-on-surface">${subtotal.toLocaleString()}.00</span>
+                <span className="font-sans text-on-surface">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-on-surface-variant font-sans text-xs uppercase tracking-widest">Vận Chuyển</span>
@@ -233,7 +234,7 @@ export const Cart: React.FC = () => {
               <div className="pt-6 border-t border-outline-variant/20">
                 <div className="flex justify-between items-end mb-8">
                   <span className="serif text-lg">Tổng Cộng</span>
-                  <span className="serif text-3xl text-secondary">${total.toLocaleString()}.00</span>
+                  <span className="serif text-3xl text-secondary">{formatCurrency(total)}</span>
                 </div>
                 <button 
                   onClick={handleCheckout}
