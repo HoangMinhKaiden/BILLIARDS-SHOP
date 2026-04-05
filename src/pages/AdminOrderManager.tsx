@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Package, Truck, CheckCircle, Clock, Loader2, Edit2, Check, X, Search, User, Phone, MapPin, DollarSign, Tag, FileText } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, Loader2, Edit2, Check, X, Search, User, Phone, MapPin, DollarSign, Tag, FileText, Trash2 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
 import { Navigate } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
@@ -12,6 +12,7 @@ export const AdminOrderManager: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingOrder, setEditingOrder] = useState<any | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -51,6 +52,18 @@ export const AdminOrderManager: React.FC = () => {
       setEditingOrder(null);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `orders/${id}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteOrder = async (id: string) => {
+    setIsSubmitting(true);
+    try {
+      await deleteDoc(doc(db, 'orders', id));
+      setOrderToDelete(null);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `orders/${id}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -142,9 +155,18 @@ export const AdminOrderManager: React.FC = () => {
                     <option value="shipped">Đang giao hàng</option>
                     <option value="delivered">Đã giao hàng</option>
                   </select>
-                  <div className="text-right">
-                    <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Tổng Cộng</div>
-                    <div className="serif text-lg text-primary">{formatCurrency(order.total)}</div>
+                  <div className="text-right flex items-center gap-4">
+                    <button 
+                      onClick={() => setOrderToDelete(order)}
+                      className="p-2 hover:bg-error/10 text-on-surface-variant hover:text-error rounded transition-colors"
+                      title="Xóa đơn hàng"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div>
+                      <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Tổng Cộng</div>
+                      <div className="serif text-lg text-primary">{formatCurrency(order.total)}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -248,6 +270,51 @@ export const AdminOrderManager: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {orderToDelete && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => setOrderToDelete(null)}
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-md bg-surface-container rounded-2xl shadow-2xl p-8 border border-outline-variant/20"
+          >
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 className="w-8 h-8 text-error" />
+              </div>
+              <div>
+                <h3 className="serif text-2xl mb-2">Xác Nhận Xóa Đơn Hàng</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Bạn có chắc chắn muốn xóa đơn hàng <span className="text-on-surface font-bold">#{orderToDelete.id.slice(-8).toUpperCase()}</span>? Hành động này không thể hoàn tác.
+                </p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={() => setOrderToDelete(null)}
+                  className="flex-1 px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-container-high transition-all"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={() => deleteOrder(orderToDelete.id)}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-error text-on-error px-6 py-3 rounded-lg font-sans font-bold text-xs tracking-widest uppercase hover:brightness-110 transition-all shadow-lg shadow-error/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Xác Nhận Xóa
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 };
