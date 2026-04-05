@@ -26,7 +26,8 @@ export const Navbar: React.FC = () => {
     ...(isAdmin ? [
       { name: 'Sản Phẩm', path: '/admin' },
       { name: 'Giải Đấu', path: '/admin/articles' },
-      { name: 'Đơn Hàng', path: '/admin/orders' }
+      { name: 'Đơn Hàng', path: '/admin/orders' },
+      { name: 'Khách Hàng', path: '/admin/customers' }
     ] : []),
   ];
 

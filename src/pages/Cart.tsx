@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight, Minus, Plus, Trash2, Loader2, ShoppingBag, Che
 import { motion } from 'motion/react';
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, addDoc, setDoc, getDoc } from 'firebase/firestore';
 import { formatCurrency } from '../utils/format';
 
 export const Cart: React.FC = () => {
@@ -84,6 +84,7 @@ export const Cart: React.FC = () => {
     }
 
     setIsCheckingOut(true);
+    console.log("Starting checkout process...", { paymentMethod, shippingInfo, total });
     try {
       const orderData = {
         userId: user!.uid,
@@ -97,17 +98,42 @@ export const Cart: React.FC = () => {
         createdAt: new Date().toISOString()
       };
 
+      console.log("Order data prepared:", orderData);
+
       // Create order
       const ordersRef = collection(db, 'orders');
-      await addDoc(ordersRef, orderData);
+      const orderDoc = await addDoc(ordersRef, orderData);
+      console.log("Order created with ID:", orderDoc.id);
+
+      // Update customer info
+      console.log("Updating customer info for UID:", user!.uid);
+      const customerRef = doc(db, 'customers', user!.uid);
+      const customerDoc = await getDoc(customerRef);
+      
+      const currentTotalOrders = customerDoc.exists() ? (customerDoc.data()?.totalOrders || 0) : 0;
+      const currentTotalSpent = customerDoc.exists() ? (customerDoc.data()?.totalSpent || 0) : 0;
+
+      await setDoc(customerRef, {
+        uid: user!.uid,
+        email: user!.email,
+        displayName: user!.displayName || shippingInfo.name,
+        lastShippingInfo: paymentMethod === 'cod' ? shippingInfo : null,
+        lastOrderAt: new Date().toISOString(),
+        totalOrders: currentTotalOrders + 1,
+        totalSpent: currentTotalSpent + total
+      }, { merge: true });
+      console.log("Customer info updated.");
 
       // Clear cart
+      console.log("Clearing cart items...");
       for (const item of cartItems) {
         await deleteDoc(doc(db, 'users', user!.uid, 'cart', item.id));
       }
+      console.log("Cart cleared.");
 
       setCheckoutSuccess(true);
     } catch (error) {
+      console.error("Checkout error:", error);
       handleFirestoreError(error, OperationType.WRITE, 'orders');
     } finally {
       setIsCheckingOut(false);

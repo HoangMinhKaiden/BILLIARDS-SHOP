@@ -46,9 +46,11 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           // Fetch or create user profile
           const userDocRef = doc(db, 'users', currentUser.uid);
+          console.log("Checking for user profile in Firestore for UID:", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
 
           if (!userDoc.exists()) {
+            console.log("No profile found, creating new profile for:", currentUser.email);
             const newProfile: UserProfile = {
               uid: currentUser.uid,
               email: currentUser.email || '',
@@ -58,8 +60,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               createdAt: new Date().toISOString(),
             };
             await setDoc(userDocRef, newProfile);
+            console.log("Profile created successfully.");
             setProfile(newProfile);
           } else {
+            console.log("Profile found:", userDoc.data());
             setProfile(userDoc.data() as UserProfile);
           }
 

@@ -9,6 +9,7 @@ import { Insights } from './pages/Insights';
 import { AdminProductManager } from './pages/AdminProductManager';
 import { AdminArticleManager } from './pages/AdminArticleManager';
 import { AdminOrderManager } from './pages/AdminOrderManager';
+import { AdminCustomerManager } from './pages/AdminCustomerManager';
 import { Orders } from './pages/Orders';
 import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseProvider } from './context/FirebaseContext';
@@ -31,6 +32,7 @@ export default function App() {
                 <Route path="/admin" element={<PageWrapper><AdminProductManager /></PageWrapper>} />
                 <Route path="/admin/articles" element={<PageWrapper><AdminArticleManager /></PageWrapper>} />
                 <Route path="/admin/orders" element={<PageWrapper><AdminOrderManager /></PageWrapper>} />
+                <Route path="/admin/customers" element={<PageWrapper><AdminCustomerManager /></PageWrapper>} />
               </Routes>
             </AnimatePresence>
           </main>

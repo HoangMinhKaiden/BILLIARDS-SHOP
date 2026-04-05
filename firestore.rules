@@ -97,6 +97,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /customers/{customerId} {
+      allow read: if isAdmin();
+      allow write: if isAuthenticated() && isOwner(customerId);
+    }
+
     match /{path=**} {
       allow read, write: if false;
     }

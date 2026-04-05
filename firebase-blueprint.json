@@ -89,6 +89,28 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "items", "total", "status", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer profile and purchase history.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "lastShippingInfo": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" }
+          }
+        },
+        "lastOrderAt": { "type": "string", "format": "date-time" },
+        "totalOrders": { "type": "integer" },
+        "totalSpent": { "type": "number" }
+      },
+      "required": ["uid", "email", "totalOrders", "totalSpent"]
     }
   },
   "firestore": {
@@ -111,6 +133,10 @@
     "/orders/{orderId}": {
       "schema": "Order",
       "description": "Customer orders."
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer records."
     }
   }
 }

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Package, Truck, CheckCircle, Clock, ExternalLink, Loader2, ShoppingBag } from 'lucide-react';
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { formatCurrency } from '../utils/format';
 
 export const Orders: React.FC = () => {
@@ -20,15 +20,16 @@ export const Orders: React.FC = () => {
 
     const q = query(
       collection(db, 'orders'),
-      where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      }));
+      const ordersData = snapshot.docs
+        .map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }))
+        .filter((order: any) => order.userId === user.uid);
       setOrders(ordersData);
       setLoading(false);
     }, (error) => {
