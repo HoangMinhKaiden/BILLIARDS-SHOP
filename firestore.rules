@@ -9,13 +9,16 @@ service cloud.firestore {
     // Fields: uid, email, displayName, photoURL, role, createdAt
     //
     // Collection: products
-    // Fields: id, name, price, category, brand, description, image, specs, weight
+    // Fields: id, name, price, category, brand, description, image, specs
     //
     // Collection: articles
     // Fields: id, title, category, excerpt, image, date
     //
     // Collection: users/{userId}/cart
-    // Fields: productId, name, price, quantity, image, weight
+    // Fields: productId, name, price, quantity, image
+    //
+    // Collection: orders
+    // Fields: userId, userEmail, items, total, paymentMethod, shippingInfo, status, trackingNumber, createdAt
     //
     // ===============================================================
 
@@ -85,6 +88,13 @@ service cloud.firestore {
     match /articles/{articleId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /{path=**} {

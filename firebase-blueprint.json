@@ -35,10 +35,6 @@
               "value": { "type": "string" }
             }
           }
-        },
-        "weight": {
-          "type": "array",
-          "items": { "type": "string" }
         }
       },
       "required": ["name", "price", "category", "brand", "description", "image"]
@@ -52,8 +48,7 @@
         "name": { "type": "string" },
         "price": { "type": "number" },
         "quantity": { "type": "integer" },
-        "image": { "type": "string", "format": "uri" },
-        "weight": { "type": "string" }
+        "image": { "type": "string", "format": "uri" }
       },
       "required": ["productId", "name", "price", "quantity"]
     },
@@ -70,6 +65,30 @@
         "date": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "category", "excerpt", "image", "date"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string", "format": "email" },
+        "items": { "type": "array", "items": { "$ref": "CartItem" } },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cod", "contact"] },
+        "shippingInfo": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" }
+          }
+        },
+        "status": { "type": "string", "enum": ["pending", "processing", "shipped", "delivered"] },
+        "trackingNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt"]
     }
   },
   "firestore": {
@@ -88,6 +107,10 @@
     "/articles/{articleId}": {
       "schema": "Article",
       "description": "Insight articles."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders."
     }
   }
 }

@@ -127,19 +127,6 @@ export const ProductDetail: React.FC = () => {
           </header>
 
           <div className="space-y-6">
-            <div className="space-y-4">
-              <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Chọn Trọng Lượng</label>
-              <div className="flex gap-4">
-                {['19 oz', '20 oz', '21 oz'].map((w, i) => (
-                  <button 
-                    key={w} 
-                    className={`flex-1 py-4 rounded-lg border transition-all text-sm font-medium ${i === 1 ? 'bg-primary text-on-primary border-primary font-bold shadow-lg shadow-primary/20' : 'bg-surface-container border-outline-variant/20 text-on-surface hover:border-primary'}`}
-                  >
-                    {w}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="pt-4 space-y-4">
               <button 
                 onClick={addToCart}

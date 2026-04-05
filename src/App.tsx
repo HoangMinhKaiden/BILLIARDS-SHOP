@@ -8,6 +8,8 @@ import { Cart } from './pages/Cart';
 import { Insights } from './pages/Insights';
 import { AdminProductManager } from './pages/AdminProductManager';
 import { AdminArticleManager } from './pages/AdminArticleManager';
+import { AdminOrderManager } from './pages/AdminOrderManager';
+import { Orders } from './pages/Orders';
 import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseProvider } from './context/FirebaseContext';
 
@@ -24,9 +26,11 @@ export default function App() {
                 <Route path="/collection" element={<PageWrapper><Collection /></PageWrapper>} />
                 <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
                 <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
+                <Route path="/orders" element={<PageWrapper><Orders /></PageWrapper>} />
                 <Route path="/insights" element={<PageWrapper><Insights /></PageWrapper>} />
                 <Route path="/admin" element={<PageWrapper><AdminProductManager /></PageWrapper>} />
                 <Route path="/admin/articles" element={<PageWrapper><AdminArticleManager /></PageWrapper>} />
+                <Route path="/admin/orders" element={<PageWrapper><AdminOrderManager /></PageWrapper>} />
               </Routes>
             </AnimatePresence>
           </main>

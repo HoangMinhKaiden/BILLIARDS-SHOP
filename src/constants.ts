@@ -16,8 +16,7 @@ export const PRODUCTS: Product[] = [
       { label: 'Trọng lượng', value: '19oz - 21oz' },
       { label: 'Ren', value: 'Radial' },
       { label: 'Tay cầm', value: 'Da bò thật' }
-    ],
-    weight: ['19oz', '20oz', '21oz']
+    ]
   },
   {
     id: 'sovereign-1',
@@ -32,8 +31,7 @@ export const PRODUCTS: Product[] = [
       { label: 'Trọng lượng', value: '19oz' },
       { label: 'Ren', value: 'Radial' },
       { label: 'Tay cầm', value: 'Da bò thật' }
-    ],
-    weight: ['19oz', '20oz', '21oz']
+    ]
   },
   {
     id: 'shadow-1',
@@ -48,8 +46,7 @@ export const PRODUCTS: Product[] = [
       { label: 'Trọng lượng', value: '19oz' },
       { label: 'Ren', value: 'Radial' },
       { label: 'Tay cầm', value: 'Trơn' }
-    ],
-    weight: ['19oz', '20oz', '21oz']
+    ]
   },
   {
     id: 'butt-1',
@@ -63,8 +60,7 @@ export const PRODUCTS: Product[] = [
       { label: 'Chất liệu', value: 'Gỗ Mun' },
       { label: 'Ren', value: 'Radial' },
       { label: 'Khảm', value: 'Xà cừ' }
-    ],
-    weight: ['15oz', '16oz']
+    ]
   },
   {
     id: 'shaft-1',
@@ -78,8 +74,7 @@ export const PRODUCTS: Product[] = [
       { label: 'Đường kính', value: '12.4mm' },
       { label: 'Chất liệu', value: 'Carbon Fiber' },
       { label: 'Ren', value: 'Radial' }
-    ],
-    weight: []
+    ]
   },
   {
     id: 'chalk-1',
@@ -92,8 +87,7 @@ export const PRODUCTS: Product[] = [
     specs: [
       { label: 'Màu sắc', value: 'Xanh dương' },
       { label: 'Phiên bản', value: '0.98 Beta' }
-    ],
-    weight: []
+    ]
   }
 ];
 

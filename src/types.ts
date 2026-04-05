@@ -10,7 +10,6 @@ export interface Product {
     label: string;
     value: string;
   }[];
-  weight?: string[];
 }
 
 export interface Article {

@@ -20,9 +20,13 @@ export const Navbar: React.FC = () => {
     { name: 'Trang Chủ', path: '/' },
     { name: 'Bộ Sưu Tập', path: '/collection' },
     { name: 'Kiến Thức', path: '/insights' },
+    ...(user && !isAdmin ? [
+      { name: 'Đơn Hàng', path: '/orders' }
+    ] : []),
     ...(isAdmin ? [
       { name: 'Sản Phẩm', path: '/admin' },
-      { name: 'Giải Đấu', path: '/admin/articles' }
+      { name: 'Giải Đấu', path: '/admin/articles' },
+      { name: 'Đơn Hàng', path: '/admin/orders' }
     ] : []),
   ];
 

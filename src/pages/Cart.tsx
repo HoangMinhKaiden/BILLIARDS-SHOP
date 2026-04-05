@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Minus, Plus, Trash2, Loader2, ShoppingBag, Check } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, addDoc } from 'firebase/firestore';
 import { formatCurrency } from '../utils/format';
 
 export const Cart: React.FC = () => {
@@ -65,16 +66,52 @@ export const Cart: React.FC = () => {
   const total = subtotal;
 
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'contact'>('cod');
+  const [shippingInfo, setShippingInfo] = useState({
+    name: '',
+    phone: '',
+    address: ''
+  });
+
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
+    setCheckoutError(null);
+    if (paymentMethod === 'cod') {
+      if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
+        setCheckoutError('Vui lòng nhập đầy đủ thông tin giao hàng.');
+        return;
+      }
+    }
+
     setIsCheckingOut(true);
-    // Simulate order processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // In a real app, we would create an 'orders' document in Firestore
-    // and clear the cart.
-    setCheckoutSuccess(true);
-    setIsCheckingOut(false);
+    try {
+      const orderData = {
+        userId: user!.uid,
+        userEmail: user!.email,
+        items: cartItems,
+        total: total,
+        paymentMethod: paymentMethod,
+        shippingInfo: paymentMethod === 'cod' ? shippingInfo : null,
+        status: 'pending',
+        trackingNumber: '',
+        createdAt: new Date().toISOString()
+      };
+
+      // Create order
+      const ordersRef = collection(db, 'orders');
+      await addDoc(ordersRef, orderData);
+
+      // Clear cart
+      for (const item of cartItems) {
+        await deleteDoc(doc(db, 'users', user!.uid, 'cart', item.id));
+      }
+
+      setCheckoutSuccess(true);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'orders');
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   if (authLoading || loading) return <div className="pt-40 text-center"><Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" /></div>;
@@ -218,6 +255,37 @@ export const Cart: React.FC = () => {
                     <span className="text-xs font-bold uppercase tracking-widest">Thanh toán khi nhận hàng (COD)</span>
                     {paymentMethod === 'cod' && <div className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(233,193,118,0.6)]"></div>}
                   </button>
+                  
+                  {paymentMethod === 'cod' && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="space-y-3 pt-2"
+                    >
+                      <input 
+                        type="text"
+                        placeholder="Họ và tên người nhận"
+                        value={shippingInfo.name}
+                        onChange={(e) => setShippingInfo({ ...shippingInfo, name: e.target.value })}
+                        className="w-full bg-surface-container-low border border-outline-variant/20 rounded px-4 py-2 text-sm focus:border-secondary transition-all"
+                      />
+                      <input 
+                        type="tel"
+                        placeholder="Số điện thoại"
+                        value={shippingInfo.phone}
+                        onChange={(e) => setShippingInfo({ ...shippingInfo, phone: e.target.value })}
+                        className="w-full bg-surface-container-low border border-outline-variant/20 rounded px-4 py-2 text-sm focus:border-secondary transition-all"
+                      />
+                      <textarea 
+                        placeholder="Địa chỉ nhận hàng"
+                        value={shippingInfo.address}
+                        onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
+                        className="w-full bg-surface-container-low border border-outline-variant/20 rounded px-4 py-2 text-sm focus:border-secondary transition-all resize-none"
+                        rows={2}
+                      />
+                    </motion.div>
+                  )}
+
                   <button 
                     onClick={() => setPaymentMethod('contact')}
                     className={`w-full p-4 rounded-lg border flex flex-col items-start gap-1 transition-all ${paymentMethod === 'contact' ? 'border-secondary bg-secondary/5 text-secondary' : 'border-outline-variant/20 text-on-surface-variant hover:border-outline-variant/40'}`}
@@ -236,6 +304,9 @@ export const Cart: React.FC = () => {
                   <span className="serif text-lg">Tổng Cộng</span>
                   <span className="serif text-3xl text-secondary">{formatCurrency(total)}</span>
                 </div>
+                {checkoutError && (
+                  <p className="mb-4 text-xs text-error font-bold text-center">{checkoutError}</p>
+                )}
                 <button 
                   onClick={handleCheckout}
                   disabled={isCheckingOut}
