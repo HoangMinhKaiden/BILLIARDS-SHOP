@@ -13,11 +13,25 @@ interface UserProfile {
   createdAt: string;
 }
 
+interface SellerProfile {
+  uid: string;
+  shopName: string;
+  description: string;
+  phone: string;
+  address: string;
+  status: 'pending' | 'active' | 'suspended';
+  createdAt: string;
+  rating: number;
+  totalSales: number;
+}
+
 interface FirebaseContextType {
   user: FirebaseUser | null;
   profile: UserProfile | null;
+  sellerProfile: SellerProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  isSeller: boolean;
   cartCount: number;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -28,11 +42,13 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined
 export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     let cartUnsubscribe: (() => void) | null = null;
+    let sellerUnsubscribe: (() => void) | null = null;
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -40,6 +56,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (cartUnsubscribe) {
         cartUnsubscribe();
         cartUnsubscribe = null;
+      }
+      if (sellerUnsubscribe) {
+        sellerUnsubscribe();
+        sellerUnsubscribe = null;
       }
 
       if (currentUser) {
@@ -66,6 +86,15 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             console.log("Profile found:", userDoc.data());
             setProfile(userDoc.data() as UserProfile);
           }
+
+          // Fetch seller profile
+          sellerUnsubscribe = onSnapshot(doc(db, 'sellers', currentUser.uid), (doc) => {
+            if (doc.exists()) {
+              setSellerProfile(doc.data() as SellerProfile);
+            } else {
+              setSellerProfile(null);
+            }
+          });
 
           // Initialize data if admin
           if (currentUser.email === 'minhpnhgcd220355@fpt.edu.vn') {
@@ -113,6 +142,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       } else {
         setProfile(null);
+        setSellerProfile(null);
         setCartCount(0);
       }
       setLoading(false);
@@ -121,6 +151,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => {
       unsubscribe();
       if (cartUnsubscribe) cartUnsubscribe();
+      if (sellerUnsubscribe) sellerUnsubscribe();
     };
   }, []);
 
@@ -143,8 +174,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const value = {
     user,
     profile,
+    sellerProfile,
     loading,
     isAdmin: profile?.role === 'admin',
+    isSeller: sellerProfile?.status === 'active',
     cartCount,
     signIn,
     signOut: signOutUser,

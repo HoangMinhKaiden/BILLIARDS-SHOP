@@ -26,6 +26,10 @@
         "brand": { "type": "string" },
         "description": { "type": "string" },
         "image": { "type": "string", "format": "uri" },
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
         "specs": {
           "type": "array",
           "items": {
@@ -37,7 +41,24 @@
           }
         }
       },
-      "required": ["name", "price", "category", "brand", "description", "image"]
+      "required": ["name", "price", "category", "brand", "description", "image", "status"]
+    },
+    "Seller": {
+      "title": "Seller",
+      "description": "Information about a marketplace seller.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "shopName": { "type": "string" },
+        "description": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "active", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "rating": { "type": "number" },
+        "totalSales": { "type": "integer" }
+      },
+      "required": ["uid", "shopName", "status", "createdAt"]
     },
     "CartItem": {
       "title": "CartItem",
@@ -125,6 +146,10 @@
     "/products/{productId}": {
       "schema": "Product",
       "description": "Product catalog."
+    },
+    "/sellers/{sellerId}": {
+      "schema": "Seller",
+      "description": "Marketplace seller profiles."
     },
     "/articles/{articleId}": {
       "schema": "Article",

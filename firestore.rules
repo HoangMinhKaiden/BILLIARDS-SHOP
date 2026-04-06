@@ -9,7 +9,10 @@ service cloud.firestore {
     // Fields: uid, email, displayName, photoURL, role, createdAt
     //
     // Collection: products
-    // Fields: id, name, price, category, brand, description, image, specs
+    // Fields: id, name, price, category, brand, description, image, specs, sellerId, sellerName, status, createdAt
+    //
+    // Collection: sellers
+    // Fields: uid, shopName, description, phone, address, status, createdAt, rating, totalSales
     //
     // Collection: articles
     // Fields: id, title, category, excerpt, image, date
@@ -47,13 +50,21 @@ service cloud.firestore {
     }
 
     function isValidProduct(data) {
-      return data.keys().hasAll(['name', 'price', 'category', 'brand', 'description', 'image']) &&
+      return data.keys().hasAll(['name', 'price', 'category', 'brand', 'description', 'image', 'status']) &&
              data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
              data.price is number && data.price >= 0 &&
              data.category is string &&
              data.brand is string &&
              data.description is string && data.description.size() < 5000 &&
-             data.image is string;
+             data.image is string &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidSeller(data) {
+      return data.keys().hasAll(['uid', 'shopName', 'status', 'createdAt']) &&
+             data.uid is string &&
+             data.shopName is string && data.shopName.size() > 0 && data.shopName.size() < 100 &&
+             data.status in ['pending', 'active', 'suspended'];
     }
 
     function isValidCartItem(data) {
@@ -81,7 +92,23 @@ service cloud.firestore {
 
     match /products/{productId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow create: if (isAdmin() && isValidProduct(request.resource.data)) || 
+                       (isAuthenticated() && request.resource.data.sellerId == request.auth.uid && 
+                        request.resource.data.status == 'pending' && isValidProduct(request.resource.data));
+      allow update: if (isAdmin() && isValidProduct(request.resource.data)) || 
+                       (isAuthenticated() && resource.data.sellerId == request.auth.uid && 
+                        request.resource.data.sellerId == resource.data.sellerId &&
+                        request.resource.data.status == resource.data.status && 
+                        isValidProduct(request.resource.data));
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.sellerId == request.auth.uid);
+    }
+
+    match /sellers/{sellerId} {
+      allow read: if true;
+      allow create: if isOwner(sellerId) && request.resource.data.status == 'pending' && isValidSeller(request.resource.data);
+      allow update: if isAdmin() || 
+                       (isOwner(sellerId) && request.resource.data.status == resource.data.status && 
+                        isValidSeller(request.resource.data));
       allow delete: if isAdmin();
     }
 

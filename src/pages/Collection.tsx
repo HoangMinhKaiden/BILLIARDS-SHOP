@@ -43,7 +43,7 @@ export const Collection: React.FC = () => {
 
   // Apply filters
   useEffect(() => {
-    let result = [...products];
+    let result = products.filter(p => p.status === 'approved' || !p.status);
 
     // Category filter
     if (selectedCategories.length > 0) {

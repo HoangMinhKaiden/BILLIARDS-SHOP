@@ -11,6 +11,8 @@ import { AdminArticleManager } from './pages/AdminArticleManager';
 import { AdminOrderManager } from './pages/AdminOrderManager';
 import { AdminCustomerManager } from './pages/AdminCustomerManager';
 import { Orders } from './pages/Orders';
+import { SellerOnboarding } from './pages/SellerOnboarding';
+import { SellerDashboard } from './pages/SellerDashboard';
 import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseProvider } from './context/FirebaseContext';
 
@@ -29,6 +31,8 @@ export default function App() {
                 <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
                 <Route path="/orders" element={<PageWrapper><Orders /></PageWrapper>} />
                 <Route path="/insights" element={<PageWrapper><Insights /></PageWrapper>} />
+                <Route path="/seller/onboarding" element={<PageWrapper><SellerOnboarding /></PageWrapper>} />
+                <Route path="/seller/dashboard" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
                 <Route path="/admin" element={<PageWrapper><AdminProductManager /></PageWrapper>} />
                 <Route path="/admin/articles" element={<PageWrapper><AdminArticleManager /></PageWrapper>} />
                 <Route path="/admin/orders" element={<PageWrapper><AdminOrderManager /></PageWrapper>} />

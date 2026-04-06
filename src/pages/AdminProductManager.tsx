@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, X, Check, Package, DollarSign, Tag, FileText, Image as ImageIcon, Settings, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Check, Package, DollarSign, Tag, FileText, Image as ImageIcon, Settings, Loader2, User as UserIcon, CheckCircle, XCircle } from 'lucide-react';
 import { CATEGORIES, PRODUCTS, ARTICLES } from '../constants';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, query, orderBy, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
 import { Navigate } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
@@ -28,6 +28,8 @@ export const AdminProductManager: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<any | null>(null);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'all' | 'pending'>('all');
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ProductFormInputs>({
     defaultValues: {
@@ -123,6 +125,18 @@ export const AdminProductManager: React.FC = () => {
     }
   };
 
+  const handleStatusUpdate = async (productId: string, status: 'approved' | 'rejected') => {
+    setIsSubmitting(true);
+    try {
+      await updateDoc(doc(db, 'products', productId), { status });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `products/${productId}`);
+    } finally {
+      setIsSubmitting(true); // Resetting isSubmitting is handled by the re-render usually, but let's be explicit
+      setIsSubmitting(false);
+    }
+  };
+
   const addSpecField = () => {
     setValue('specs', [...specs, { label: '', value: '' }]);
   };
@@ -131,6 +145,10 @@ export const AdminProductManager: React.FC = () => {
     setValue('specs', specs.filter((_, i) => i !== index));
   };
 
+  const filteredProducts = activeTab === 'all' 
+    ? products 
+    : products.filter(p => p.status === 'pending');
+
   return (
     <main className="pt-32 pb-20 px-8 max-w-7xl mx-auto">
       <header className="flex justify-between items-end mb-12">
@@ -138,12 +156,28 @@ export const AdminProductManager: React.FC = () => {
           <span className="font-sans text-xs uppercase tracking-widest text-secondary mb-2 block">Quản Trị Viên</span>
           <h1 className="serif text-5xl text-on-surface font-bold leading-tight">Quản Lý Sản Phẩm</h1>
         </div>
-        <button 
-          onClick={() => openModal()}
-          className="bg-primary text-on-primary px-6 py-3 rounded-lg font-sans font-bold text-sm tracking-widest uppercase flex items-center gap-2 hover:brightness-110 transition-all shadow-lg shadow-primary/20"
-        >
-          <Plus className="w-4 h-4" /> Thêm Sản Phẩm
-        </button>
+        <div className="flex gap-4">
+          <div className="bg-surface-container p-1 rounded-xl flex gap-2 mr-4">
+            <button 
+              onClick={() => setActiveTab('all')}
+              className={`px-4 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all ${activeTab === 'all' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            >
+              Tất Cả
+            </button>
+            <button 
+              onClick={() => setActiveTab('pending')}
+              className={`px-4 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all ${activeTab === 'pending' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            >
+              Chờ Duyệt ({products.filter(p => p.status === 'pending').length})
+            </button>
+          </div>
+          <button 
+            onClick={() => openModal()}
+            className="bg-primary text-on-primary px-6 py-3 rounded-lg font-sans font-bold text-sm tracking-widest uppercase flex items-center gap-2 hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+          >
+            <Plus className="w-4 h-4" /> Thêm Sản Phẩm
+          </button>
+        </div>
       </header>
 
       <div className="bg-surface-container rounded-xl overflow-hidden shadow-2xl border border-outline-variant/10">
@@ -157,13 +191,14 @@ export const AdminProductManager: React.FC = () => {
             <thead className="bg-surface-container-high text-on-surface-variant font-sans text-xs uppercase tracking-widest">
               <tr>
                 <th className="px-8 py-6">Sản Phẩm</th>
-                <th className="px-8 py-6">Danh Mục</th>
+                <th className="px-8 py-6">Nhà Cung Cấp</th>
+                <th className="px-8 py-6">Trạng Thái</th>
                 <th className="px-8 py-6">Giá</th>
                 <th className="px-8 py-6 text-right">Thao Tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-surface-container-highest/30 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
@@ -177,15 +212,49 @@ export const AdminProductManager: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="px-3 py-1 bg-secondary/10 text-secondary text-[10px] uppercase tracking-widest font-bold rounded-full border border-secondary/20">
-                      {product.category}
-                    </span>
+                    <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                      <UserIcon className="w-3 h-3" />
+                      {product.sellerName || 'Hệ Thống'}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    {product.status === 'approved' || !product.status ? (
+                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] uppercase tracking-widest font-bold rounded-full border border-emerald-500/20">
+                        Đã Duyệt
+                      </span>
+                    ) : product.status === 'pending' ? (
+                      <span className="px-3 py-1 bg-amber-500/10 text-amber-500 text-[10px] uppercase tracking-widest font-bold rounded-full border border-amber-500/20">
+                        Chờ Duyệt
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] uppercase tracking-widest font-bold rounded-full border border-red-500/20">
+                        Từ Chối
+                      </span>
+                    )}
                   </td>
                   <td className="px-8 py-6 font-sans text-on-surface">
                     {formatCurrency(product.price)}
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {product.status === 'pending' && (
+                        <>
+                          <button 
+                            onClick={() => handleStatusUpdate(product.id, 'approved')}
+                            className="p-2 hover:bg-emerald-500/10 text-emerald-500 rounded transition-colors"
+                            title="Duyệt"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleStatusUpdate(product.id, 'rejected')}
+                            className="p-2 hover:bg-red-500/10 text-red-500 rounded transition-colors"
+                            title="Từ chối"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                       <button 
                         onClick={() => openModal(product)}
                         className="p-2 hover:bg-primary/10 text-on-surface-variant hover:text-primary rounded transition-colors"

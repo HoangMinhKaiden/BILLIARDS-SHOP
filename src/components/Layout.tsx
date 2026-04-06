@@ -8,7 +8,7 @@ export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const location = useLocation();
-  const { user, profile, isAdmin, cartCount, signIn, signOut } = useFirebase();
+  const { user, profile, isAdmin, isSeller, sellerProfile, cartCount, signIn, signOut } = useFirebase();
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -21,7 +21,12 @@ export const Navbar: React.FC = () => {
     { name: 'Bộ Sưu Tập', path: '/collection' },
     { name: 'Kiến Thức', path: '/insights' },
     ...(user && !isAdmin ? [
-      { name: 'Đơn Hàng', path: '/orders' }
+      { name: 'Đơn Hàng', path: '/orders' },
+      ...(sellerProfile ? [
+        { name: 'Kênh Người Bán', path: '/seller/dashboard' }
+      ] : [
+        { name: 'Bán Hàng', path: '/seller/onboarding' }
+      ])
     ] : []),
     ...(isAdmin ? [
       { name: 'Sản Phẩm', path: '/admin' },
