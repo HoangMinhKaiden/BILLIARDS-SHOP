@@ -53,12 +53,40 @@
         "description": { "type": "string" },
         "phone": { "type": "string" },
         "address": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "active", "suspended"] },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
         "createdAt": { "type": "string", "format": "date-time" },
         "rating": { "type": "number" },
         "totalSales": { "type": "integer" }
       },
       "required": ["uid", "shopName", "status", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A conversation between a buyer and a seller.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "productId": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "buyerId": { "type": "string" }
+      },
+      "required": ["participants", "lastMessageAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A message within a chat.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chatId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chatId", "senderId", "text", "createdAt"]
     },
     "CartItem": {
       "title": "CartItem",
@@ -150,6 +178,14 @@
     "/sellers/{sellerId}": {
       "schema": "Seller",
       "description": "Marketplace seller profiles."
+    },
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Direct chat conversations."
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a chat."
     },
     "/articles/{articleId}": {
       "schema": "Article",

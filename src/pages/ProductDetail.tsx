@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2, Share2 } from 'lucide-react';
+import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2, Share2, MessageCircle } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
@@ -146,6 +146,15 @@ export const ProductDetail: React.FC = () => {
                 {addingToCart ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShoppingBag className="w-5 h-5" />}
                 <span>{addingToCart ? 'Đang Thêm...' : 'Thêm Vào Bộ Sưu Tập'}</span>
               </button>
+              {product.sellerId && product.sellerId !== user?.uid && (
+                <button 
+                  onClick={() => navigate(`/chat?sellerId=${product.sellerId}&productId=${product.id}`)}
+                  className="w-full py-4 bg-surface-container-highest text-on-surface font-bold text-xs uppercase tracking-widest rounded-lg border border-outline-variant/20 hover:bg-outline-variant/10 transition-all flex items-center justify-center space-x-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Trò chuyện với người bán</span>
+                </button>
+              )}
               <div className="text-center">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Hoặc xem trực tiếp tại cửa hàng</p>
                 <a href="tel:0768139513" className="text-secondary font-sans font-bold hover:underline transition-all">Hotline: 0768139513</a>

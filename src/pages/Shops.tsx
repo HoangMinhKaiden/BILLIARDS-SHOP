@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Store, Search, Star, MapPin, Loader2, ArrowRight } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Store, Search, Star, MapPin, Loader2, ArrowRight, MessageCircle } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { useFirebase } from '../context/FirebaseContext';
 
 export const Shops: React.FC = () => {
+  const { user } = useFirebase();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [shops, setShops] = useState<any[]>([]);
@@ -96,12 +99,22 @@ export const Shops: React.FC = () => {
                 </div>
               </div>
 
-              <Link 
-                to={`/collection?seller=${shop.id}`}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-surface-container-high text-on-surface rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all"
-              >
-                Xem Sản Phẩm <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex gap-3">
+                <Link 
+                  to={`/collection?seller=${shop.id}`}
+                  className="flex-grow flex items-center justify-center gap-2 py-4 bg-surface-container-high text-on-surface rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all"
+                >
+                  Sản Phẩm <ArrowRight className="w-4 h-4" />
+                </Link>
+                {shop.id !== user?.uid && (
+                  <button 
+                    onClick={() => navigate(`/chat?sellerId=${shop.id}`)}
+                    className="px-6 flex items-center justify-center bg-secondary/10 text-secondary rounded-xl hover:bg-secondary hover:text-on-secondary transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
             </motion.div>
           ))}
         </div>

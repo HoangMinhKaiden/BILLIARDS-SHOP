@@ -15,6 +15,7 @@ import {
   CheckCircle2, 
   Clock, 
   AlertCircle,
+  MessageSquare,
   Image as ImageIcon
 } from 'lucide-react';
 import { useFirebase } from '../context/FirebaseContext';
@@ -24,7 +25,7 @@ import { formatCurrency } from '../utils/format';
 
 export const SellerDashboard: React.FC = () => {
   const { user, sellerProfile, isSeller } = useFirebase();
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'settings' | 'chat'>('overview');
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -138,6 +139,7 @@ export const SellerDashboard: React.FC = () => {
               { id: 'overview', label: 'Tổng Quan', icon: LayoutDashboard },
               { id: 'products', label: 'Sản Phẩm', icon: Package },
               { id: 'orders', label: 'Đơn Hàng', icon: ShoppingBag },
+              { id: 'chat', label: 'Trò Chuyện', icon: MessageSquare },
               { id: 'settings', label: 'Cài Đặt Shop', icon: Settings },
             ].map((tab) => (
               <button
@@ -272,6 +274,20 @@ export const SellerDashboard: React.FC = () => {
                 <ShoppingBag className="w-12 h-12 text-on-surface-variant/20 mx-auto mb-4" />
                 <h3 className="serif text-2xl text-on-surface mb-2">Quản Lý Đơn Hàng</h3>
                 <p className="text-on-surface-variant font-light">Tính năng này đang được cập nhật để hỗ trợ thanh toán trực tiếp.</p>
+              </div>
+            )}
+
+            {activeTab === 'chat' && (
+              <div className="bg-surface-container rounded-3xl p-10 border border-outline-variant/10 text-center py-32">
+                <MessageSquare className="w-12 h-12 text-on-surface-variant/20 mx-auto mb-4" />
+                <h3 className="serif text-2xl text-on-surface mb-2">Quản Lý Trò Chuyện</h3>
+                <p className="text-on-surface-variant font-light mb-8">Trao đổi trực tiếp với khách hàng của bạn.</p>
+                <button 
+                  onClick={() => window.location.href = '/chat'}
+                  className="bg-primary text-on-primary px-8 py-3 rounded-full font-sans font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+                >
+                  Mở Cửa Sổ Chat
+                </button>
               </div>
             )}
 

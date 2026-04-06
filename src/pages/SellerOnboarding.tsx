@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Store, ShieldCheck, TrendingUp, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
 import { useFirebase } from '../context/FirebaseContext';
@@ -17,6 +17,12 @@ export const SellerOnboarding: React.FC = () => {
     address: ''
   });
 
+  useEffect(() => {
+    if (sellerProfile?.status === 'active') {
+      navigate('/seller/dashboard');
+    }
+  }, [sellerProfile, navigate]);
+
   if (!user) {
     return (
       <div className="pt-40 text-center px-8">
@@ -29,19 +35,18 @@ export const SellerOnboarding: React.FC = () => {
   if (sellerProfile) {
     return (
       <div className="pt-40 text-center px-8 max-w-2xl mx-auto">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
-          <CheckCircle className="w-10 h-10 text-primary" />
+        <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-8">
+          <Store className="w-10 h-10 text-secondary" />
         </div>
-        <h2 className="serif text-4xl mb-4">Yêu cầu đang được xử lý</h2>
+        <h2 className="serif text-4xl mb-4">Tài khoản của bạn đang hoạt động</h2>
         <p className="text-on-surface-variant mb-8 leading-relaxed">
-          Cảm ơn bạn đã đăng ký trở thành Nhà cung cấp. Đội ngũ của chúng tôi đang xem xét hồ sơ của bạn. 
-          Trạng thái hiện tại: <span className="font-bold text-secondary uppercase tracking-widest">{sellerProfile.status}</span>
+          Bạn đã là một Nhà cung cấp trên hệ thống. Hãy bắt đầu quản lý cửa hàng của mình ngay bây giờ.
         </p>
         <button 
-          onClick={() => navigate('/')}
-          className="bg-surface-container-highest text-on-surface px-8 py-3 rounded-full font-sans font-bold text-xs uppercase tracking-widest hover:bg-outline-variant/20 transition-all"
+          onClick={() => navigate('/seller/dashboard')}
+          className="bg-secondary text-on-secondary px-8 py-3 rounded-full font-sans font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all"
         >
-          Quay lại trang chủ
+          Vào kênh người bán
         </button>
       </div>
     );

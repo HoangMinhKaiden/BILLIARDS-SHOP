@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X, LogOut, LogIn, Store } from 'lucide-react';
+import { Search, User, ShoppingCart, Menu, X, LogOut, LogIn, Store, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useFirebase } from '../context/FirebaseContext';
 
@@ -82,6 +82,12 @@ export const Navbar: React.FC = () => {
           
           <button className="md:hidden text-on-surface-variant hover:text-secondary transition-colors"><Search className="w-5 h-5" /></button>
           
+          {user && (
+            <Link to="/chat" className="text-on-surface-variant hover:text-primary transition-colors relative">
+              <MessageSquare className="w-5 h-5" />
+            </Link>
+          )}
+
           {user ? (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">

@@ -14,6 +14,7 @@ import { Orders } from './pages/Orders';
 import { SellerOnboarding } from './pages/SellerOnboarding';
 import { SellerDashboard } from './pages/SellerDashboard';
 import { Shops } from './pages/Shops';
+import { Chat } from './pages/Chat';
 import { motion, AnimatePresence } from 'motion/react';
 import { FirebaseProvider } from './context/FirebaseContext';
 
@@ -33,6 +34,8 @@ export default function App() {
                 <Route path="/orders" element={<PageWrapper><Orders /></PageWrapper>} />
                 <Route path="/insights" element={<PageWrapper><Insights /></PageWrapper>} />
                 <Route path="/shops" element={<PageWrapper><Shops /></PageWrapper>} />
+                <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
+                <Route path="/chat/:chatId" element={<PageWrapper><Chat /></PageWrapper>} />
                 <Route path="/seller/onboarding" element={<PageWrapper><SellerOnboarding /></PageWrapper>} />
                 <Route path="/seller/dashboard" element={<PageWrapper><SellerDashboard /></PageWrapper>} />
                 <Route path="/admin" element={<PageWrapper><AdminProductManager /></PageWrapper>} />
