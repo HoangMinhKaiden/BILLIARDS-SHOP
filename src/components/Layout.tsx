@@ -1,13 +1,15 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X, LogOut, LogIn } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, User, ShoppingCart, Menu, X, LogOut, LogIn, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useFirebase } from '../context/FirebaseContext';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, profile, isAdmin, isSeller, sellerProfile, cartCount, signIn, signOut } = useFirebase();
 
   React.useEffect(() => {
@@ -19,6 +21,7 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Trang Chủ', path: '/' },
     { name: 'Bộ Sưu Tập', path: '/collection' },
+    { name: 'Cửa Hàng', path: '/shops' },
     { name: 'Kiến Thức', path: '/insights' },
     ...(user && !isAdmin ? [
       { name: 'Đơn Hàng', path: '/orders' },
@@ -36,6 +39,14 @@ export const Navbar: React.FC = () => {
     ] : []),
   ];
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shops?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
   return (
     <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-background/90 backdrop-blur-md py-4 border-b border-outline-variant/10' : 'bg-transparent py-8'}`}>
       <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
@@ -45,7 +56,7 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-12">
+        <div className="hidden lg:flex items-center space-x-12">
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -58,7 +69,18 @@ export const Navbar: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-6">
-          <button className="text-on-surface-variant hover:text-secondary transition-colors"><Search className="w-5 h-5" /></button>
+          <form onSubmit={handleSearch} className="hidden md:flex items-center relative group">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm shop..." 
+              className="bg-surface-container-high/50 border border-outline-variant/20 rounded-full px-4 py-2 pl-10 text-[10px] uppercase tracking-widest outline-none focus:border-primary transition-all w-40 focus:w-64"
+            />
+            <Search className="absolute left-3 w-4 h-4 text-on-surface-variant/40 group-focus-within:text-primary transition-colors" />
+          </form>
+          
+          <button className="md:hidden text-on-surface-variant hover:text-secondary transition-colors"><Search className="w-5 h-5" /></button>
           
           {user ? (
             <div className="flex items-center gap-4">

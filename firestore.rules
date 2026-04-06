@@ -64,7 +64,7 @@ service cloud.firestore {
       return data.keys().hasAll(['uid', 'shopName', 'status', 'createdAt']) &&
              data.uid is string &&
              data.shopName is string && data.shopName.size() > 0 && data.shopName.size() < 100 &&
-             data.status in ['pending', 'active', 'suspended'];
+             data.status in ['active', 'suspended'];
     }
 
     function isValidCartItem(data) {
@@ -105,7 +105,7 @@ service cloud.firestore {
 
     match /sellers/{sellerId} {
       allow read: if true;
-      allow create: if isOwner(sellerId) && request.resource.data.status == 'pending' && isValidSeller(request.resource.data);
+      allow create: if isOwner(sellerId) && request.resource.data.status == 'active' && isValidSeller(request.resource.data);
       allow update: if isAdmin() || 
                        (isOwner(sellerId) && request.resource.data.status == resource.data.status && 
                         isValidSeller(request.resource.data));

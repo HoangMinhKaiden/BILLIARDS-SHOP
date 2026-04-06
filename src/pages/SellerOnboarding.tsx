@@ -58,14 +58,14 @@ export const SellerOnboarding: React.FC = () => {
         description: formData.description,
         phone: formData.phone,
         address: formData.address,
-        status: 'pending',
+        status: 'active',
         createdAt: new Date().toISOString(),
         rating: 5,
         totalSales: 0
       };
 
       await setDoc(doc(db, 'sellers', user.uid), sellerData);
-      // Success state is handled by the re-render when sellerProfile is updated via onSnapshot in context
+      navigate('/seller/dashboard');
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `sellers/${user.uid}`);
     } finally {
