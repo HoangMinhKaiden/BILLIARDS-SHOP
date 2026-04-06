@@ -50,9 +50,12 @@ export const Feed: React.FC = () => {
   }, [sellerIdFilter]);
 
   const filteredProducts = products.filter(p => {
+    // Show approved products, OR products owned by the current user (even if pending)
     const isApproved = p.status === 'approved' || !p.status;
+    const isOwner = user && p.sellerId === user.uid;
     const categoryMatch = activeCategory === 'Tất cả' || p.category === activeCategory;
-    return isApproved && categoryMatch;
+    
+    return (isApproved || isOwner) && categoryMatch;
   });
 
   const categories = ['Tất cả', ...Array.from(new Set(products.map(p => p.category))).filter(Boolean)];
@@ -66,7 +69,7 @@ export const Feed: React.FC = () => {
           <h1 className="serif text-5xl text-on-surface font-bold mb-6">Khám Phá Sản Phẩm</h1>
           
           {/* Category Pills */}
-          <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar justify-center">
+          <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar md:justify-center">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -104,7 +107,7 @@ export const Feed: React.FC = () => {
                 className="bg-surface-container rounded-[2.5rem] overflow-hidden border border-outline-variant/10 shadow-sm hover:shadow-2xl transition-all duration-500"
               >
                 {/* Seller Header */}
-                <div className="p-6 flex items-center justify-between">
+                <div className="p-4 md:p-6 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center overflow-hidden">
                       <Store className="w-6 h-6 text-primary" />
@@ -141,11 +144,11 @@ export const Feed: React.FC = () => {
                 </Link>
 
                 {/* Product Info */}
-                <div className="p-8">
+                <div className="p-6 md:p-8">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <span className="text-[10px] uppercase tracking-[0.2em] text-secondary font-bold mb-1 block">{product.category}</span>
-                      <h2 className="serif text-3xl text-on-surface font-bold">{product.name}</h2>
+                      <h2 className="serif text-2xl md:text-3xl text-on-surface font-bold">{product.name}</h2>
                     </div>
                     <div className="flex gap-2">
                       <button className="p-3 bg-surface-container-high rounded-2xl hover:text-red-500 transition-colors">
@@ -161,17 +164,17 @@ export const Feed: React.FC = () => {
                     {product.description}
                   </p>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <Link 
                       to={`/product/${product.id}`}
-                      className="flex-grow flex items-center justify-center gap-2 py-5 bg-primary text-on-primary rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+                      className="flex-grow flex items-center justify-center gap-2 py-4 md:py-5 bg-primary text-on-primary rounded-[1.2rem] md:rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/20"
                     >
                       Xem Chi Tiết <ChevronRight className="w-4 h-4" />
                     </Link>
                     {product.sellerId !== user?.uid && (
                       <button 
                         onClick={() => navigate(`/chat?sellerId=${product.sellerId}&productId=${product.id}`)}
-                        className="px-8 flex items-center justify-center bg-secondary/10 text-secondary rounded-[1.5rem] hover:bg-secondary hover:text-on-secondary transition-all"
+                        className="py-4 px-8 flex items-center justify-center bg-secondary/10 text-secondary rounded-[1.2rem] md:rounded-[1.5rem] hover:bg-secondary hover:text-on-secondary transition-all"
                       >
                         <MessageCircle className="w-6 h-6" />
                       </button>

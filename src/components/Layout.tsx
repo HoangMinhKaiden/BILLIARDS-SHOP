@@ -48,11 +48,11 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-background/90 backdrop-blur-md py-4 border-b border-outline-variant/10' : 'bg-transparent py-8'}`}>
-      <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-background/90 backdrop-blur-md py-4 border-b border-outline-variant/10' : 'bg-transparent py-4 md:py-8'}`}>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
         <Link to="/" className="flex flex-col">
-          <span className="text-2xl font-bold tracking-[0.2em] text-on-surface serif uppercase">GRANDMASTER</span>
-          <span className="text-[10px] tracking-[0.5em] text-secondary uppercase font-sans -mt-1">The Study</span>
+          <span className="text-lg md:text-2xl font-bold tracking-[0.2em] text-on-surface serif uppercase">GRANDMASTER</span>
+          <span className="text-[8px] md:text-[10px] tracking-[0.5em] text-secondary uppercase font-sans -mt-1">The Study</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -68,7 +68,7 @@ export const Navbar: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 md:space-x-6">
           <form onSubmit={handleSearch} className="hidden md:flex items-center relative group">
             <input 
               type="text" 
@@ -89,26 +89,26 @@ export const Navbar: React.FC = () => {
           )}
 
           {user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <div className="flex items-center gap-2">
-                <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-outline-variant/20" />
+                <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-outline-variant/20" />
                 <span className="hidden lg:block text-[10px] uppercase tracking-widest text-on-surface-variant">{profile?.displayName}</span>
               </div>
               <button onClick={signOut} className="text-on-surface-variant hover:text-error transition-colors">
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
           ) : (
             <button onClick={signIn} className="text-on-surface-variant hover:text-secondary transition-colors flex items-center gap-2">
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4 md:w-5 md:h-5" />
               <span className="hidden lg:block text-[10px] uppercase tracking-widest">Đăng Nhập</span>
             </button>
           )}
 
           <Link to="/cart" className="relative text-on-surface-variant hover:text-secondary transition-colors">
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-secondary text-on-secondary text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-secondary text-on-secondary text-[8px] font-bold w-3.5 h-3.5 md:w-4 md:h-4 rounded-full flex items-center justify-center">
                 {cartCount}
               </span>
             )}
