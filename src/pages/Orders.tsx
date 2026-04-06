@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Package, Truck, CheckCircle, Clock, ExternalLink, Loader2, ShoppingBag } from 'lucide-react';
 import { useFirebase } from '../context/FirebaseContext';
 import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { formatCurrency } from '../utils/format';
 
 export const Orders: React.FC = () => {
@@ -20,19 +20,20 @@ export const Orders: React.FC = () => {
 
     const q = query(
       collection(db, 'orders'),
+      where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs
-        .map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }))
-        .filter((order: any) => order.userId === user.uid);
+      const ordersData = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      }));
       setOrders(ordersData);
       setLoading(false);
     }, (error) => {
+      console.error("Orders fetch error:", error);
+      setLoading(false);
       handleFirestoreError(error, OperationType.LIST, 'orders');
     });
 
@@ -71,10 +72,23 @@ export const Orders: React.FC = () => {
       </header>
 
       {orders.length === 0 ? (
-        <div className="text-center py-20 bg-surface-container rounded-2xl border border-outline-variant/10">
-          <ShoppingBag className="w-16 h-16 mx-auto text-on-surface-variant/20 mb-6" />
-          <p className="text-on-surface-variant serif text-xl">Bạn chưa có đơn hàng nào.</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-24 bg-surface-container rounded-3xl border border-outline-variant/10 shadow-inner"
+        >
+          <div className="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-8">
+            <ShoppingBag className="w-10 h-10 text-on-surface-variant/40" />
+          </div>
+          <h2 className="serif text-3xl text-on-surface mb-4">Hành trình chưa bắt đầu</h2>
+          <p className="text-on-surface-variant font-light mb-10 max-w-md mx-auto">Bạn chưa có đơn hàng nào. Hãy khám phá bộ sưu tập của chúng tôi để tìm thấy những tuyệt tác dành riêng cho bạn.</p>
+          <button 
+            onClick={() => window.location.href = '/collection'}
+            className="bg-secondary text-on-secondary px-10 py-4 rounded-full font-sans font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-secondary/20"
+          >
+            Khám phá ngay
+          </button>
+        </motion.div>
       ) : (
         <div className="space-y-8">
           {orders.map((order) => (
