@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, ArrowRight, ChevronLeft, ChevronRight, Loader2, X, Calendar, Tag, MapPin, Clock, Users, Trophy, Wallet, Info } from 'lucide-react';
+import { Mail, ArrowRight, ChevronLeft, ChevronRight, Loader2, X, Calendar, Tag, MapPin, Clock, Users, Trophy, Wallet, Info, Share2 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import Markdown from 'react-markdown';
+import { ShareButtons } from '../components/ShareButtons';
 
 export const Insights: React.FC = () => {
   const [articles, setArticles] = useState<any[]>([]);
@@ -189,13 +190,20 @@ export const Insights: React.FC = () => {
                 </div>
 
                 <div className="p-8 md:p-12">
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-secondary font-bold bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20">
-                      <Tag className="w-3 h-3" /> {selectedArticle.category}
+                  <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-secondary font-bold bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20">
+                        <Tag className="w-3 h-3" /> {selectedArticle.category}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
+                        <Calendar className="w-3 h-3" /> {selectedArticle.date}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
-                      <Calendar className="w-3 h-3" /> {selectedArticle.date}
-                    </div>
+                    <ShareButtons 
+                      title={selectedArticle.title} 
+                      text={selectedArticle.excerpt} 
+                      url={`${window.location.origin}/insights?id=${selectedArticle.id}`} 
+                    />
                   </div>
 
                   <h2 className="text-4xl md:text-5xl serif font-bold text-on-surface mb-8 leading-tight">{selectedArticle.title}</h2>

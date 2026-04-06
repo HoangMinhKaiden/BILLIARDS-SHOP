@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2 } from 'lucide-react';
+import { ChevronRight, Star, ShoppingBag, Verified, Truck, Loader2, Share2 } from 'lucide-react';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '../context/FirebaseContext';
 import { formatCurrency } from '../utils/format';
+import { ShareButtons } from '../components/ShareButtons';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -122,7 +123,16 @@ export const ProductDetail: React.FC = () => {
                 <span className="ml-2 text-xs text-on-surface-variant font-medium">(24 Đánh giá)</span>
               </div>
             </div>
-            <h1 className="text-6xl serif leading-tight text-on-surface mb-4">{product.name}</h1>
+            <div className="flex items-start justify-between mb-4">
+              <h1 className="text-6xl serif leading-tight text-on-surface">{product.name}</h1>
+              <div className="pt-4">
+                <ShareButtons 
+                  title={product.name} 
+                  text={`Khám phá ${product.name} tại cửa hàng của chúng tôi!`} 
+                  url={window.location.href} 
+                />
+              </div>
+            </div>
             <p className="text-3xl font-light text-primary tracking-tight">{formatCurrency(product.price)}</p>
           </header>
 
