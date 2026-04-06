@@ -101,7 +101,7 @@ export const Shops: React.FC = () => {
 
               <div className="flex gap-3">
                 <Link 
-                  to={`/collection?seller=${shop.id}`}
+                  to={`/feed?seller=${shop.id}`}
                   className="flex-grow flex items-center justify-center gap-2 py-4 bg-surface-container-high text-on-surface rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all"
                 >
                   Sản Phẩm <ArrowRight className="w-4 h-4" />

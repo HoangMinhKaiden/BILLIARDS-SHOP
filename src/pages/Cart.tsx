@@ -154,7 +154,7 @@ export const Cart: React.FC = () => {
             ? 'Đơn hàng của bạn đã được tiếp nhận. Chúng tôi sẽ sớm liên hệ để xác nhận và giao hàng.' 
             : 'Yêu cầu của bạn đã được gửi đi. Chúng tôi sẽ liên hệ qua SĐT 0768139513 để sắp xếp lịch hẹn.'}
         </p>
-        <Link to="/collection" className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold uppercase tracking-widest inline-block">Tiếp Tục Mua Sắm</Link>
+        <Link to="/feed" className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold uppercase tracking-widest inline-block">Tiếp Tục Mua Sắm</Link>
       </main>
     );
   }
@@ -176,7 +176,7 @@ export const Cart: React.FC = () => {
         <ShoppingBag className="w-16 h-16 mx-auto text-on-surface-variant/20 mb-6" />
         <h2 className="serif text-3xl mb-4">Giỏ hàng trống</h2>
         <p className="text-on-surface-variant mb-8">Có vẻ như bạn chưa chọn được sản phẩm nào ưng ý.</p>
-        <Link to="/collection" className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold uppercase tracking-widest inline-block">Khám Phá Bộ Sưu Tập</Link>
+        <Link to="/feed" className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold uppercase tracking-widest inline-block">Khám Phá Bảng Tin</Link>
       </main>
     );
   }
@@ -250,7 +250,7 @@ export const Cart: React.FC = () => {
           ))}
 
           <div className="pt-4">
-            <Link to="/collection" className="inline-flex items-center gap-2 serif text-sm italic text-tertiary hover:text-primary transition-colors border-b border-primary/20 pb-1">
+            <Link to="/feed" className="inline-flex items-center gap-2 serif text-sm italic text-tertiary hover:text-primary transition-colors border-b border-primary/20 pb-1">
               <ArrowLeft className="w-4 h-4" />
               Quay Lại Cửa Hàng
             </Link>

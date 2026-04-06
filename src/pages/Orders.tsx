@@ -83,7 +83,7 @@ export const Orders: React.FC = () => {
           <h2 className="serif text-3xl text-on-surface mb-4">Hành trình chưa bắt đầu</h2>
           <p className="text-on-surface-variant font-light mb-10 max-w-md mx-auto">Bạn chưa có đơn hàng nào. Hãy khám phá bộ sưu tập của chúng tôi để tìm thấy những tuyệt tác dành riêng cho bạn.</p>
           <button 
-            onClick={() => window.location.href = '/collection'}
+            onClick={() => window.location.href = '/feed'}
             className="bg-secondary text-on-secondary px-10 py-4 rounded-full font-sans font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-secondary/20"
           >
             Khám phá ngay

@@ -20,7 +20,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Trang Chủ', path: '/' },
-    { name: 'Bộ Sưu Tập', path: '/collection' },
+    { name: 'Bảng Tin', path: '/feed' },
     { name: 'Cửa Hàng', path: '/shops' },
     { name: 'Kiến Thức', path: '/insights' },
     ...(user && !isAdmin ? [
@@ -164,7 +164,7 @@ export const Footer: React.FC = () => {
         <div className="md:col-span-2">
           <h4 className="text-[10px] uppercase tracking-[0.3em] text-on-surface font-bold mb-8">Khám Phá</h4>
           <ul className="space-y-4 text-sm text-on-surface-variant font-light">
-            <li><Link to="/collection" className="hover:text-secondary transition-colors">Bộ Sưu Tập</Link></li>
+            <li><Link to="/feed" className="hover:text-secondary transition-colors">Bảng Tin</Link></li>
             <li><Link to="/insights" className="hover:text-secondary transition-colors">Kiến Thức</Link></li>
             <li><Link to="/" className="hover:text-secondary transition-colors">Về Chúng Tôi</Link></li>
           </ul>

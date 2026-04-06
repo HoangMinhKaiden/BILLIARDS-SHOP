@@ -20,7 +20,7 @@ import {
 import { useFirebase } from '../context/FirebaseContext';
 
 export const Chat: React.FC = () => {
-  const { user } = useFirebase();
+  const { user, profile, sellerProfile: mySellerProfile } = useFirebase();
   const { chatId: urlChatId } = useParams<{ chatId: string }>();
   const [searchParams] = useSearchParams();
   const sellerId = searchParams.get('sellerId');
@@ -76,20 +76,40 @@ export const Chat: React.FC = () => {
           setActiveChat({ ...chatDoc.data(), id: chatDoc.id });
         }
       } else if (sellerId && sellerId !== user.uid) {
-        // Check if chat already exists between these two
+        // Check if chat already exists between these two for this specific product
         const existingChat = chats.find(c => 
-          c.participants.includes(user.uid) && c.participants.includes(sellerId)
+          c.participants.includes(user.uid) && 
+          c.participants.includes(sellerId) &&
+          (productId ? c.productId === productId : !c.productId)
         );
 
         if (existingChat) {
           navigate(`/chat/${existingChat.id}`);
         } else {
+          // Fetch seller name for the new chat
+          const sellerDoc = await getDoc(doc(db, 'sellers', sellerId));
+          const sellerData = sellerDoc.data();
+          
+          // Fetch product info if exists
+          let productInfo = null;
+          if (productId) {
+            const productDoc = await getDoc(doc(db, 'products', productId));
+            if (productDoc.exists()) {
+              productInfo = productDoc.data();
+            }
+          }
+          
           // Create a temporary "new chat" state
           setActiveChat({
             id: 'new',
             participants: [user.uid, sellerId],
             sellerId: sellerId,
+            sellerName: sellerData?.shopName || 'Cửa hàng',
             buyerId: user.uid,
+            buyerName: profile?.displayName || 'Khách hàng',
+            productId: productId || null,
+            productName: productInfo?.name || null,
+            productImage: productInfo?.image || null,
             isNew: true
           });
         }
@@ -138,10 +158,14 @@ export const Chat: React.FC = () => {
         const chatData = {
           participants: activeChat.participants,
           sellerId: activeChat.sellerId,
+          sellerName: activeChat.sellerName,
           buyerId: activeChat.buyerId,
+          buyerName: activeChat.buyerName,
           lastMessage: newMessage,
           lastMessageAt: new Date().toISOString(),
-          productId: productId || null
+          productId: activeChat.productId || null,
+          productName: activeChat.productName || null,
+          productImage: activeChat.productImage || null
         };
         const chatRef = await addDoc(collection(db, 'chats'), chatData);
         chatId = chatRef.id;
@@ -203,18 +227,31 @@ export const Chat: React.FC = () => {
                   onClick={() => navigate(`/chat/${chat.id}`)}
                   className={`w-full p-6 text-left hover:bg-surface-container-high transition-all flex gap-4 items-center ${activeChat?.id === chat.id ? 'bg-surface-container-highest' : ''}`}
                 >
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                    {chat.sellerId === user.uid ? <User className="w-6 h-6 text-primary" /> : <Store className="w-6 h-6 text-primary" />}
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+                    {chat.sellerId === user.uid ? (
+                      <User className="w-6 h-6 text-primary" />
+                    ) : (
+                      chat.productImage ? (
+                        <img src={chat.productImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <Store className="w-6 h-6 text-primary" />
+                      )
+                    )}
                   </div>
                   <div className="flex-grow min-w-0">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className="font-bold text-sm truncate">
-                        {chat.sellerId === user.uid ? 'Khách hàng' : 'Cửa hàng'}
+                        {chat.sellerId === user.uid ? (chat.buyerName || 'Khách hàng') : (chat.sellerName || 'Cửa hàng')}
                       </h4>
                       <span className="text-[10px] text-on-surface-variant whitespace-nowrap">
                         {new Date(chat.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
+                    {chat.productName && (
+                      <p className="text-[9px] text-primary font-bold uppercase tracking-widest mb-1 truncate">
+                        Sản phẩm: {chat.productName}
+                      </p>
+                    )}
                     <p className="text-xs text-on-surface-variant truncate">{chat.lastMessage}</p>
                   </div>
                 </button>
@@ -235,14 +272,30 @@ export const Chat: React.FC = () => {
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  {activeChat.sellerId === user.uid ? <User className="w-5 h-5 text-primary" /> : <Store className="w-5 h-5 text-primary" />}
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+                  {activeChat.sellerId === user.uid ? (
+                    <User className="w-5 h-5 text-primary" />
+                  ) : (
+                    activeChat.productImage ? (
+                      <img src={activeChat.productImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <Store className="w-5 h-5 text-primary" />
+                    )
+                  )}
                 </div>
                 <div>
                   <h3 className="font-bold text-on-surface">
-                    {activeChat.sellerId === user.uid ? 'Khách hàng' : 'Cửa hàng'}
+                    {activeChat.sellerId === user.uid ? (activeChat.buyerName || 'Khách hàng') : (activeChat.sellerName || 'Cửa hàng')}
                   </h3>
-                  <p className="text-[10px] text-primary uppercase tracking-widest font-bold">Trực tuyến</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-primary uppercase tracking-widest font-bold">Trực tuyến</p>
+                    {activeChat.productName && (
+                      <>
+                        <span className="text-[10px] text-on-surface-variant">•</span>
+                        <p className="text-[10px] text-on-surface-variant font-medium">Hỏi về: {activeChat.productName}</p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </header>
 

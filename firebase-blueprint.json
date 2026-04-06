@@ -70,8 +70,12 @@
         "lastMessage": { "type": "string" },
         "lastMessageAt": { "type": "string", "format": "date-time" },
         "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "productImage": { "type": "string" },
         "sellerId": { "type": "string" },
-        "buyerId": { "type": "string" }
+        "sellerName": { "type": "string" },
+        "buyerId": { "type": "string" },
+        "buyerName": { "type": "string" }
       },
       "required": ["participants", "lastMessageAt"]
     },

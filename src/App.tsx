@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar, Footer } from './components/Layout';
 import { Home } from './pages/Home';
-import { Collection } from './pages/Collection';
+import { Feed } from './pages/Feed';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Insights } from './pages/Insights';
@@ -28,7 +28,7 @@ export default function App() {
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-                <Route path="/collection" element={<PageWrapper><Collection /></PageWrapper>} />
+                <Route path="/feed" element={<PageWrapper><Feed /></PageWrapper>} />
                 <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
                 <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
                 <Route path="/orders" element={<PageWrapper><Orders /></PageWrapper>} />

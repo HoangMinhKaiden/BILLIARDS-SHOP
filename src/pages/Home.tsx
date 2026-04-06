@@ -49,8 +49,8 @@ export const Home: React.FC = () => {
             Nơi kỹ thuật bậc thầy hòa quyện cùng tâm hồn của trò chơi.
           </p>
           <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
-            <Link to="/collection" className="bg-primary text-on-primary px-10 py-4 rounded-md font-bold tracking-tight shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
-              Bộ Sưu Tập
+            <Link to="/feed" className="bg-primary text-on-primary px-10 py-4 rounded-md font-bold tracking-tight shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+              Khám Phá Bảng Tin
             </Link>
             <button className="text-secondary serif text-xl border-b-2 border-secondary/30 hover:border-secondary transition-all">
               Thiết Kế Riêng
@@ -66,7 +66,7 @@ export const Home: React.FC = () => {
             <span className="font-sans text-xs uppercase tracking-widest text-secondary mb-4 block">Lựa Chọn Hàng Đầu</span>
             <h2 className="serif text-4xl md:text-5xl">Cơ Nổi Bật</h2>
           </div>
-          <Link to="/collection" className="text-on-surface-variant font-sans text-sm hover:text-primary transition-colors">Xem Tất Cả</Link>
+          <Link to="/feed" className="text-on-surface-variant font-sans text-sm hover:text-primary transition-colors">Xem Tất Cả</Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {loading ? (

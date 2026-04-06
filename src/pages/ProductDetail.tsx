@@ -79,7 +79,7 @@ export const ProductDetail: React.FC = () => {
     <main className="pt-32 pb-20 max-w-7xl mx-auto px-8">
       {/* Breadcrumb */}
       <nav className="mb-12 flex items-center space-x-2 text-xs uppercase tracking-widest text-on-surface-variant/60 font-medium">
-        <Link to="/collection" className="hover:text-primary transition-colors">Bộ Sưu Tập</Link>
+        <Link to="/feed" className="hover:text-primary transition-colors">Bảng Tin</Link>
         <ChevronRight className="w-3 h-3" />
         <span className="text-on-surface">{product.name}</span>
       </nav>
